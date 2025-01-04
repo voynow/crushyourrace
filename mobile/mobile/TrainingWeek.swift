@@ -34,7 +34,7 @@ struct TrainingWeekView: View {
 }
 
 struct WeeklyProgressView: View {
-  let pastSessions: [DailyMetrics]
+  let pastSessions: [DailyActivity]
   let futureSessions: [TrainingSession]
   let weeklySummaries: [WeekSummary]?
   @State private var showingMultiWeek: Bool = false

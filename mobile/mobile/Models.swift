@@ -136,7 +136,7 @@ enum SessionType: String, Codable {
   case rest = "rest day"
 }
 
-struct DailyMetrics: Codable {
+struct DailyActivity: Codable {
   let date: String
   let dayOfWeek: Day
   let weekOfYear: Int
@@ -146,6 +146,7 @@ struct DailyMetrics: Codable {
   let movingTimeInMinutes: Double
   let paceMinutesPerMile: Double?
   let activityCount: Int
+  let activityIds: [Int]
 
   enum CodingKeys: String, CodingKey {
     case date
@@ -157,11 +158,12 @@ struct DailyMetrics: Codable {
     case movingTimeInMinutes = "moving_time_in_minutes"
     case paceMinutesPerMile = "pace_minutes_per_mile"
     case activityCount = "activity_count"
+    case activityIds = "activity_ids"
   }
 }
 
 struct EnrichedActivity: Codable {
-  let activity: DailyMetrics
+  let activity: DailyActivity
   let coachesNotes: String
 
   enum CodingKeys: String, CodingKey {
