@@ -2,7 +2,7 @@ from enum import StrEnum
 from typing import List
 
 from pydantic import BaseModel, Field
-from src.types.activity import DailyMetrics
+from src.types.activity import DailyActivity
 
 
 class Day(StrEnum):
@@ -55,7 +55,7 @@ class TrainingWeek(BaseModel):
 
 
 class EnrichedActivity(BaseModel):
-    activity: DailyMetrics
+    activity: DailyActivity
     coaches_notes: str
 
 

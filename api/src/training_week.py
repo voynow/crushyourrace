@@ -8,7 +8,7 @@ from src.prompts import (
     PSEUDO_TRAINING_WEEK_PROMPT,
     TRAINING_WEEK_PROMPT,
 )
-from src.types.activity import DailyMetrics
+from src.types.activity import DailyActivity
 from src.types.mileage_recommendation import MileageRecommendation
 from src.types.training_week import (
     EnrichedActivity,
@@ -46,7 +46,7 @@ def get_remaining_days_of_week(dt: datetime.datetime, exe_type: ExeType) -> List
 
 
 def gen_pseudo_training_week(
-    last_n_days_of_activity: List[DailyMetrics],
+    last_n_days_of_activity: List[DailyActivity],
     mileage_recommendation: MileageRecommendation,
     miles_completed_this_week: float,
     miles_remaining_this_week: float,
@@ -93,7 +93,7 @@ def gen_training_week(
 
 
 def gen_coaches_notes(
-    activity_of_interest: DailyMetrics, past_7_days: List[DailyMetrics]
+    activity_of_interest: DailyActivity, past_7_days: List[DailyActivity]
 ) -> str:
     message = COACHES_NOTES_PROMPT.substitute(
         COACH_ROLE=COACH_ROLE,
@@ -105,13 +105,13 @@ def gen_coaches_notes(
 
 
 def slice_and_gen_weekly_activity(
-    daily_activity: List[DailyMetrics], rest_of_week: List[str]
+    daily_activity: List[DailyActivity], rest_of_week: List[str]
 ) -> List[EnrichedActivity]:
     """
     Slices the weekly activity based on the remaining days of the week and
     generates coach notes for each activity
 
-    :param daily_activity: List of DailyMetrics objects
+    :param daily_activity: List of DailyActivity objects
     :param rest_of_week: List of remaining days of the week
     :return: List of EnrichedActivity objects
     """
@@ -140,7 +140,7 @@ def slice_and_gen_weekly_activity(
 
 def gen_full_training_week(
     user: UserRow,
-    daily_activity: List[DailyMetrics],
+    daily_activity: List[DailyActivity],
     mileage_rec: MileageRecommendation,
     exe_type: ExeType,
     dt: datetime.datetime,
@@ -149,7 +149,7 @@ def gen_full_training_week(
     Generates full training week given mileage recommendation
 
     :param user: user entity
-    :param daily_activity: list of daily actvity metrics past n weeks
+    :param daily_activity: list of daily activity data past n weeks
     :param mileage_rec: recommendation for this weeks training
     :param exe_type: new week or mid week
     :param dt: datetime injection, helpful for testing
