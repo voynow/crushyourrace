@@ -41,7 +41,7 @@ class Activity(BaseModel):
     average_temp: Optional[float] = None
 
 
-class DailyMetrics(BaseModel):
+class DailyActivity(BaseModel):
     date: datetime.date
     day_of_week: str
     week_of_year: int
@@ -50,6 +50,7 @@ class DailyMetrics(BaseModel):
     elevation_gain_in_feet: float
     moving_time_in_minutes: float
     pace_minutes_per_mile: Optional[float]
+    activity_ids: list[int]
     activity_count: int
 
 

@@ -1,12 +1,12 @@
 import datetime
 import logging
-from typing import List, Tuple
+from typing import List
 
 from src import activities, supabase_client
 from src.constants import COACH_ROLE
 from src.llm import get_completion_json
 from src.training_plan import gen_training_plan_pipeline
-from src.types.activity import DailyMetrics, WeekSummary
+from src.types.activity import DailyActivity, WeekSummary
 from src.types.mileage_recommendation import (
     MileageRecommendation,
     MileageRecommendationRow,
@@ -49,14 +49,14 @@ Your task is to provide training recommendations for the upcoming week."""
 
 
 def gen_mileage_rec_wrapper(
-    user: UserRow, daily_activity: List[DailyMetrics], dt: datetime.datetime
+    user: UserRow, daily_activity: List[DailyActivity], dt: datetime.datetime
 ) -> MileageRecommendation:
     """
     Abstraction for mileage rec generation, either pulled from training plan
     generation or generated directly from weekly summaries
 
     :param user: UserRow object
-    :param daily_activity: List of DailyMetrics objects
+    :param daily_activity: List of DailyActivity objects
     :param dt: datetime injection, helpful for testing
     :return: MileageRecommendation used to generate training week
     """
@@ -65,7 +65,7 @@ def gen_mileage_rec_wrapper(
             "Mileage recommendation can only be generated on Sunday (night) when the week is complete"
         )
 
-    weekly_summaries = activities.get_weekly_summaries(daily_metrics=daily_activity)
+    weekly_summaries = activities.get_weekly_summaries(daily_activity=daily_activity)
     if user.preferences.race_date and user.preferences.race_distance:
         training_plan = gen_training_plan_pipeline(
             user=user, weekly_summaries=weekly_summaries, dt=dt
@@ -84,13 +84,13 @@ def gen_mileage_rec_wrapper(
 
 
 def create_new_mileage_recommendation(
-    user: UserRow, daily_activity: List[DailyMetrics], dt: datetime.datetime
+    user: UserRow, daily_activity: List[DailyActivity], dt: datetime.datetime
 ) -> MileageRecommendation:
     """
     Creates a new mileage recommendation for the next week
 
     :param user: user entity
-    :param daily_activity: list of daily metrics
+    :param daily_activity: list of daily activity data
     :param dt: datetime injection, helpful for testing
     :return: mileage recommendation entity
     """
@@ -113,7 +113,7 @@ def create_new_mileage_recommendation(
 
 def get_or_gen_mileage_recommendation(
     user: UserRow,
-    daily_activity: List[DailyMetrics],
+    daily_activity: List[DailyActivity],
     exe_type: ExeType,
     dt: datetime,
 ) -> MileageRecommendation:
@@ -121,7 +121,7 @@ def get_or_gen_mileage_recommendation(
     Executes mileage rec strategy depending on exe type
 
     :param user: user entity
-    :param daily_activity: list of daily metrics
+    :param daily_activity: list of daily activity data
     :param exe_type: new week or mid week
     :param dt: datetime injection, helpful for testing
     :return: mileage recommendation entity

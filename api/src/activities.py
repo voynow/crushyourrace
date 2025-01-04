@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import List, Optional
 
 from src import constants
-from src.types.activity import Activity, DailyMetrics, WeekSummary
+from src.types.activity import Activity, DailyActivity, WeekSummary
 from src.utils import round_all_floats
 from stravalib.client import Client
 
@@ -41,12 +41,12 @@ def add_missing_dates(
     return sorted(activities + placeholders, key=lambda x: x.start_date_local)
 
 
-def aggregate_daily_metrics(activities: List[Activity]) -> List[DailyMetrics]:
+def aggregate_daily_activity(activities: List[Activity]) -> List[DailyActivity]:
     """
     Aggregates and transforms activity data to calculate daily and weekly metrics.
 
     :param activities: List of Activity Pydantic models containing activity data
-    :return: A list of DailyMetrics objects with aggregated and transformed metrics
+    :return: A list of DailyActivity objects with aggregated and transformed metrics
     """
 
     results = []
@@ -58,6 +58,7 @@ def aggregate_daily_metrics(activities: List[Activity]) -> List[DailyMetrics]:
         total_distance = sum(a.distance for a in daily_activities)
         total_elevation_gain = sum(a.total_elevation_gain for a in daily_activities)
         total_moving_time = sum(a.moving_time.total_seconds() for a in daily_activities)
+        activity_ids = [a.id for a in daily_activities if a.id != -1]
         activity_count = len([a for a in daily_activities if a.id != -1])
 
         if total_distance > 0:
@@ -69,7 +70,7 @@ def aggregate_daily_metrics(activities: List[Activity]) -> List[DailyMetrics]:
 
         results.append(
             round_all_floats(
-                DailyMetrics(
+                DailyActivity(
                     date=activity_date,
                     day_of_week=activity_date.strftime("%a").lower(),
                     week_of_year=activity_date.isocalendar().week,
@@ -79,6 +80,7 @@ def aggregate_daily_metrics(activities: List[Activity]) -> List[DailyMetrics]:
                     * constants.FEET_PER_METER,
                     moving_time_in_minutes=total_moving_time / 60,
                     pace_minutes_per_mile=pace_minutes_per_mile,
+                    activity_ids=activity_ids,
                     activity_count=activity_count,
                 )
             )
@@ -96,7 +98,7 @@ def aggregate_daily_metrics(activities: List[Activity]) -> List[DailyMetrics]:
 
 def get_daily_activity(
     strava_client: Client, dt: datetime.datetime, num_weeks: int = 8
-) -> List[DailyMetrics]:
+) -> List[DailyActivity]:
     """
     Fetches activities for a given athlete ID and returns a DataFrame with daily aggregated activities
 
@@ -121,33 +123,33 @@ def get_daily_activity(
     )
 
     # aggregate metrics
-    return aggregate_daily_metrics(all_dates_activities)
+    return aggregate_daily_activity(all_dates_activities)
 
 
 def get_weekly_summaries(
     strava_client: Optional[Client] = None,
-    daily_metrics: Optional[List[DailyMetrics]] = None,
+    daily_activity: Optional[List[DailyActivity]] = None,
     dt: Optional[datetime.datetime] = None,
 ) -> List[WeekSummary]:
     """
     Aggregate daily metrics by week of the year and calculate load for each week.
 
     :param strava_client: The Strava client object to fetch data.
-    :param daily_metrics: List of DailyMetrics objects
+    :param daily_activity: List of DailyActivity objects
     :param dt: datetime injection, helpful for testing
     :return: A list of WeekSummary objects with summary statistics
     """
-    if strava_client is None and daily_metrics is None:
-        raise ValueError("Either strava_client or daily_metrics must be provided")
+    if strava_client is None and daily_activity is None:
+        raise ValueError("Either strava_client or daily_activity must be provided")
 
-    if daily_metrics is None:
-        daily_metrics = get_daily_activity(strava_client, dt=dt)
+    if daily_activity is None:
+        daily_activity = get_daily_activity(strava_client, dt=dt)
 
     weekly_aggregates = defaultdict(
         lambda: {"total_distance": 0, "longest_run": 0, "start_of_week": None}
     )
 
-    for metrics in daily_metrics:
+    for metrics in daily_activity:
         key = (metrics.year, metrics.week_of_year)
 
         # calculate total distance and longest run

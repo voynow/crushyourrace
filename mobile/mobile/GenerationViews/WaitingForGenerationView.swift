@@ -55,19 +55,22 @@ struct WaitingForGenerationView: View {
       VStack {
         Spacer()
         Button(action: { showOnboarding = true }) {
-          Text("About Crush Your Race")
+          Text("About ")
             .font(.system(size: 16, weight: .medium))
             .foregroundColor(ColorTheme.midLightGrey2)
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity)
-            .overlay(
-              Rectangle()
-                .frame(height: 1)
-                .foregroundColor(ColorTheme.darkGrey),
-              alignment: .top
-            )
-            .background(ColorTheme.black)
+            + Text("Crush Your Race")
+            .font(.system(size: 16, weight: .medium))
+            .foregroundColor(ColorTheme.midLightGrey)
         }
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity)
+        .overlay(
+          Rectangle()
+            .frame(height: 1)
+            .foregroundColor(ColorTheme.darkGrey),
+          alignment: .top
+        )
+        .background(ColorTheme.black)
         .padding(.bottom, 16)
       }
       .edgesIgnoringSafeArea(.bottom)

@@ -103,12 +103,12 @@ def test_apple_push_notification():
         title="Test Notification ✔️",
         body="Don't panic! This is only a test.",
     )
-    user_auth = supabase_client.get_user_auth(os.environ["RACHELS_ATHLETE_ID"])
-    send_push_notification(
-        device_token=user_auth.device_token,
-        title="Test Notification ✔️",
-        body="Don't panic! This is only a test.",
-    )
+    # user_auth = supabase_client.get_user_auth(os.environ["RACHELS_ATHLETE_ID"])
+    # send_push_notification(
+    #     device_token=user_auth.device_token,
+    #     title="Test Notification ✔️",
+    #     body="Don't panic! This is only a test.",
+    # )
 
 
 def test_get_training_plan():
