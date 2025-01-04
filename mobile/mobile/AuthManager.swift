@@ -4,7 +4,7 @@ import UIKit
 
 class AuthManager: ObservableObject {
   private let clientID = "95101"
-  private let redirectURI = "trackflow://www.trackflow.xyz"
+  private let redirectURI = "crushyourrace://www.crushyourrace.com"
   private let scope = "read_all,profile:read_all,activity:read_all"
 
   @Published var showAlert = false
@@ -28,7 +28,7 @@ class AuthManager: ObservableObject {
   }
 
   func handleURL(_ url: URL) {
-    if url.scheme == "trackflow" && url.host == "www.trackflow.xyz" {
+    if url.scheme == "crushyourrace" && url.host == "www.crushyourrace.com" {
       if let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
         let code = queryItems.first(where: { $0.name == "code" })?.value
       {

@@ -5,7 +5,7 @@ class NotificationManager {
   static let shared = NotificationManager()
   private var deviceToken: String?
   private let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "com.trackflow", category: "NotificationManager")
+    subsystem: Bundle.main.bundleIdentifier ?? "com.crushyourrace", category: "NotificationManager")
 
   private init() {}
 

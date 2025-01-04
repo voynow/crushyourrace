@@ -10,10 +10,10 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>xyz.trackflow.app</string>
+			<string>com.crushyourrace.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>trackflow</string>
+				<string>crushyourrace</string>
 			</array>
 		</dict>
 	</array>
