@@ -4,7 +4,7 @@ import UserNotifications
 
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   private let logger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "com.trackflow", category: "AppDelegate")
+    subsystem: Bundle.main.bundleIdentifier ?? "com.crushyourrace", category: "AppDelegate")
 
   func application(
     _ application: UIApplication,
