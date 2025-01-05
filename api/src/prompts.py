@@ -39,11 +39,19 @@ COACHES_NOTES_PROMPT = Template(
 Your athlete has provided the following preferences:
 ${user_preferences}
 
-Your client's past 7 days of activity:
+Their past 7 days of activity:
 ${past_7_days}
 
-Your client's activities from today:
+Today's activities (${day_of_week}):
 ${activities_from_today}
 
-Now write a comment (2-3 sentences) to your client about their activity from today (${day_of_week}) in the context of their recent activity and goals. Make assumptions if necessary about their behavior and goals based on their activity."""
+Write concise, actionable feedback (2-3 sentences) about today's activity, framed in the context of their recent performance and goals. Prioritize insights that are:
+- Non-obvious or data-driven, offering unique perspectives or patterns from their activities.
+- Encouraging or challenging, balancing motivation with constructive critique.
+
+Assume their goals based on the data if not explicitly stated, and focus on what's most impactful for their progress. Avoid AI-like phrasing or generic statements—write as a professional coach speaking directly to the athlete.
+
+Notes:
+- Do not use the client's name
+- For rest days, keep the feedback extremely brief (1 sentence max)"""
 )
