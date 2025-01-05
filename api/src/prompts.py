@@ -1,6 +1,7 @@
 from string import Template
 
-PSEUDO_TRAINING_WEEK_PROMPT = Template("""${COACH_ROLE}
+PSEUDO_TRAINING_WEEK_PROMPT = Template(
+    """${COACH_ROLE}
 
 Your athlete has provided the following preferences:
 ${user_preferences}
@@ -14,10 +15,11 @@ Additionally, here are some notes you have written on recommendations for the we
 ${mileage_recommendation}
 
 Lets generate a pseudo-training week for the next ${n_remaining_days} days:
-${rest_of_week}
-""")
+${rest_of_week}"""
+)
 
-TRAINING_WEEK_PROMPT = Template("""${COACH_ROLE}
+TRAINING_WEEK_PROMPT = Template(
+    """${COACH_ROLE}
 
 Your athlete has provided the following preferences:
 ${preferences}
@@ -28,10 +30,14 @@ ${pseudo_training_week}
 Here are some notes you have written on recommendations for the week in question:
 ${mileage_recommendation}
 
-Please create a proper training week for the next ${n_days} days based on the information provided.
-""")
+Please create a proper training week for the next ${n_days} days based on the information provided."""
+)
 
-COACHES_NOTES_PROMPT = Template("""${COACH_ROLE}
+COACHES_NOTES_PROMPT = Template(
+    """${COACH_ROLE}
+                                
+Your athlete has provided the following preferences:
+${user_preferences}
 
 Your client's past 7 days of activity:
 ${past_7_days}
@@ -39,4 +45,5 @@ ${past_7_days}
 Your client's activity from today:
 ${activity_of_interest}
 
-Now write a comment (2-3 sentences) to your client about their activity from today (${day_of_week}) in the context of their recent activity and goals. Make assumptions if necessary about their behavior and goals based on their activity.""")
+Now write a comment (2-3 sentences) to your client about their activity from today (${day_of_week}) in the context of their recent activity and goals. Make assumptions if necessary about their behavior and goals based on their activity."""
+)

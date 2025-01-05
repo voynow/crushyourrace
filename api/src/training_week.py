@@ -1,7 +1,9 @@
 import datetime
 from typing import List
 
+from src import auth_manager
 from src.constants import COACH_ROLE
+from src.detailed_activity import get_detailed_activity
 from src.llm import get_completion, get_completion_json
 from src.prompts import (
     COACHES_NOTES_PROMPT,
@@ -93,24 +95,53 @@ def gen_training_week(
 
 
 def gen_coaches_notes(
-    activity_of_interest: DailyActivity, past_7_days: List[DailyActivity]
+    user: UserRow,
+    activity_of_interest: DailyActivity,
+    past_7_days: List[DailyActivity],
 ) -> str:
+    strava_client = auth_manager.get_strava_client(user.athlete_id)
+    detailed_activity_of_interest = get_detailed_activity(
+        strava_client, activity_of_interest.id
+    )
+
     message = COACHES_NOTES_PROMPT.substitute(
         COACH_ROLE=COACH_ROLE,
+        user_preferences=user.preferences,
         past_7_days=past_7_days,
-        activity_of_interest=activity_of_interest,
+        activity_of_interest=detailed_activity_of_interest,
         day_of_week=activity_of_interest.day_of_week,
     )
     return get_completion(message=message)
 
 
+def get_past_week_activities(
+    daily_activity: List[DailyActivity], activity_of_interest: DailyActivity
+) -> List[DailyActivity]:
+    """
+    Returns the previous 7 days of activities for a given activity
+
+    :param daily_activity: List of all activities
+    :param activity_of_interest: The activity of interest
+    :return: List of previous 7 days of activities
+    """
+    filtered_activities = []
+    for activity in daily_activity:
+        if (
+            activity.date > activity_of_interest.date - datetime.timedelta(days=7)
+            and activity.date < activity_of_interest.date
+        ):
+            filtered_activities.append(activity)
+    return filtered_activities
+
+
 def slice_and_gen_weekly_activity(
-    daily_activity: List[DailyActivity], rest_of_week: List[str]
+    user: UserRow, daily_activity: List[DailyActivity], rest_of_week: List[str]
 ) -> List[EnrichedActivity]:
     """
     Slices the weekly activity based on the remaining days of the week and
     generates coach notes for each activity
 
+    :param user: user entity
     :param daily_activity: List of DailyActivity objects
     :param rest_of_week: List of remaining days of the week
     :return: List of EnrichedActivity objects
@@ -123,18 +154,17 @@ def slice_and_gen_weekly_activity(
 
     return [
         EnrichedActivity(
-            activity=activity,
+            activity=activity_of_interest,
             coaches_notes=gen_coaches_notes(
-                activity_of_interest=activity,
-                past_7_days=[
-                    a
-                    for a in daily_activity
-                    if a.date > activity.date - datetime.timedelta(days=7)
-                    and a.date < activity.date
-                ],
+                user=user,
+                activity_of_interest=activity_of_interest,
+                past_7_days=get_past_week_activities(
+                    daily_activity=daily_activity,
+                    activity_of_interest=activity_of_interest,
+                ),
             ),
         )
-        for activity in this_weeks_activity
+        for activity_of_interest in this_weeks_activity
     ]
 
 
@@ -156,7 +186,9 @@ def gen_full_training_week(
     :return: full training week
     """
     rest_of_week = get_remaining_days_of_week(dt, exe_type)
-    this_weeks_activity = slice_and_gen_weekly_activity(daily_activity, rest_of_week)
+    this_weeks_activity = slice_and_gen_weekly_activity(
+        user=user, daily_activity=daily_activity, rest_of_week=rest_of_week
+    )
     miles_completed_this_week = sum(
         [obj.activity.distance_in_miles for obj in this_weeks_activity]
     )
