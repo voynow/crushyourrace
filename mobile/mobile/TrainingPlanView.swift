@@ -303,9 +303,18 @@ struct TrainingPlanChart: View {
       .foregroundStyle(ColorTheme.lightGrey.opacity(0.3))
     }
     .chartXScale(domain: dateRange)
+    .chartYAxis {
+      AxisMarks { value in
+        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+          .foregroundStyle(ColorTheme.lightGrey.opacity(0.2))
+        AxisTick()
+        AxisValueLabel()
+      }
+    }
     .chartXAxis {
       AxisMarks(values: .stride(by: .weekOfYear)) { value in
-        AxisGridLine()
+        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+          .foregroundStyle(ColorTheme.lightGrey.opacity(0.2))
         AxisTick()
         AxisValueLabel(format: .dateTime.month().day())
       }

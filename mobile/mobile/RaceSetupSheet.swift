@@ -78,6 +78,7 @@ struct RaceSetupSheet: View {
         .opacity(selectedDistance.isEmpty ? 0.6 : 1)
       )
     }
+    .preferredColorScheme(.dark)
     .onAppear {
       if let existingDistance = preferences.raceDistance {
         selectedDistance = existingDistance

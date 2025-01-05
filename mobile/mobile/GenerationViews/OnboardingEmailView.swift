@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct OnboardingEmailView: View {
   @Binding var email: String
@@ -23,16 +24,13 @@ struct OnboardingEmailView: View {
               .foregroundColor(ColorTheme.primary)
           }
         }
-        // Email input section
         VStack(spacing: 24) {
           Text("Welcome! Let's get started")
             .font(.system(size: 18))
             .foregroundColor(ColorTheme.lightGrey)
           VStack(spacing: 8) {
-            TextField("Enter your email", text: $email)
-              .textFieldStyle(PlainTextFieldStyle())
-              .keyboardType(.emailAddress)
-              .autocapitalization(.none)
+            CustomTextField(text: $email, placeholder: "Enter your email")
+              .frame(height: 24)
               .padding()
               .background(ColorTheme.darkDarkGrey)
               .cornerRadius(12)
@@ -87,5 +85,45 @@ struct OnboardingEmailView: View {
     let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
     let emailPred = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
     return emailPred.evaluate(with: email)
+  }
+}
+
+struct CustomTextField: UIViewRepresentable {
+  @Binding var text: String
+  let placeholder: String
+
+  func makeUIView(context: Context) -> UITextField {
+    let textField = UITextField()
+    textField.placeholder = placeholder
+    textField.attributedPlaceholder = NSAttributedString(
+      string: placeholder,
+      attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray.withAlphaComponent(0.4)]
+    )
+    textField.textColor = UIColor.gray.withAlphaComponent(0.7)
+    textField.delegate = context.coordinator
+    textField.backgroundColor = .clear
+    textField.autocapitalizationType = .none
+    textField.keyboardType = .emailAddress
+    return textField
+  }
+
+  func updateUIView(_ uiView: UITextField, context: Context) {
+    uiView.text = text
+  }
+
+  func makeCoordinator() -> Coordinator {
+    Coordinator(text: $text)
+  }
+
+  class Coordinator: NSObject, UITextFieldDelegate {
+    @Binding var text: String
+
+    init(text: Binding<String>) {
+      self._text = text
+    }
+
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+      text = textField.text ?? ""
+    }
   }
 }
