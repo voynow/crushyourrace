@@ -305,17 +305,17 @@ def get_mileage_recommendation(
     Get the most recent mileage recommendation for the given year and week of year
 
     :param athlete_id: The ID of the athlete
-    :param year: The year of the recommendation
-    :param week_of_year: The week of the year of the recommendation
+    :param dt: The datetime of the recommendation
     :return: A MileageRecommendation object
     """
     table = client.table(supabase_helpers.get_mileage_recommendation_table_name())
-    tomorrow = dt + datetime.timedelta(days=1)
+    week_of_year = dt.isocalendar().week
+    year = dt.isocalendar().year
     response = (
         table.select("*")
         .eq("athlete_id", athlete_id)
-        .eq("year", tomorrow.isocalendar().year)
-        .eq("week_of_year", tomorrow.isocalendar().week)
+        .eq("year", year)
+        .eq("week_of_year", week_of_year)
         .order("created_at", desc=True)
         .limit(1)
         .execute()
@@ -323,7 +323,7 @@ def get_mileage_recommendation(
 
     if not response.data:
         raise ValueError(
-            f"Could not find mileage recommendation for {athlete_id=}, year={dt.isocalendar().year}, week={dt.isocalendar().week}"
+            f"Could not find mileage recommendation for {athlete_id=}, year={year}, week={week_of_year}"
         )
     return MileageRecommendationRow(**response.data[0])
 

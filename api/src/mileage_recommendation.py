@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List
+from typing import List, Tuple
 
 from src import activities, supabase_client
 from src.constants import COACH_ROLE
@@ -84,7 +84,9 @@ def gen_mileage_rec_wrapper(
 
 
 def create_new_mileage_recommendation(
-    user: UserRow, daily_activity: List[DailyActivity], dt: datetime.datetime
+    user: UserRow,
+    daily_activity: List[DailyActivity],
+    dt: datetime.datetime,
 ) -> MileageRecommendation:
     """
     Creates a new mileage recommendation for the next week
@@ -98,10 +100,12 @@ def create_new_mileage_recommendation(
         user=user, daily_activity=daily_activity, dt=dt
     )
     tomorrow = dt + datetime.timedelta(days=1)
+    week_of_year = tomorrow.isocalendar().week
+    year = tomorrow.isocalendar().year
     supabase_client.insert_mileage_recommendation(
         MileageRecommendationRow(
-            week_of_year=tomorrow.isocalendar().week,
-            year=tomorrow.isocalendar().year,
+            week_of_year=week_of_year,
+            year=year,
             thoughts=mileage_recommendation.thoughts,
             total_volume=mileage_recommendation.total_volume,
             long_run=mileage_recommendation.long_run,
@@ -109,6 +113,24 @@ def create_new_mileage_recommendation(
         )
     )
     return mileage_recommendation
+
+
+def get_week_of_year_and_year(
+    exe_type: ExeType, dt: datetime.datetime
+) -> Tuple[int, int]:
+    """
+    Get the week of year and year for the given datetime. We run NEW_WEEK on
+    Sunday night, so in order to upsert
+
+    :param exe_type: ExeType object
+    :param dt: datetime object
+    :return: Tuple[int, int]
+    """
+    if exe_type == ExeType.NEW_WEEK:
+        tomorrow = dt + datetime.timedelta(days=1)
+        return tomorrow.isocalendar().week, tomorrow.isocalendar().year
+    else:
+        return
 
 
 def get_or_gen_mileage_recommendation(

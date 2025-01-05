@@ -42,8 +42,8 @@ ${user_preferences}
 Your client's past 7 days of activity:
 ${past_7_days}
 
-Your client's activity from today:
-${activity_of_interest}
+Your client's activities from today:
+${activities_from_today}
 
 Now write a comment (2-3 sentences) to your client about their activity from today (${day_of_week}) in the context of their recent activity and goals. Make assumptions if necessary about their behavior and goals based on their activity."""
 )

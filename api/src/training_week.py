@@ -11,6 +11,7 @@ from src.prompts import (
     TRAINING_WEEK_PROMPT,
 )
 from src.types.activity import DailyActivity
+from src.types.detailed_activity import DetailedActivity
 from src.types.mileage_recommendation import MileageRecommendation
 from src.types.training_week import (
     EnrichedActivity,
@@ -94,21 +95,48 @@ def gen_training_week(
     )
 
 
+def get_detailed_activities_from_today(
+    user: UserRow, activity_of_interest: DailyActivity
+) -> List[DetailedActivity]:
+    """
+    Extract detailed activities from a given activity. Rarely there is more than
+    one activity per day - we use a list of activities here to handle this edge case
+
+    :param user: user entity
+    :param activity_of_interest: The activity of interest
+    :return: List of detailed activities from today
+    """
+    strava_client = auth_manager.get_strava_client(user.athlete_id)
+
+    activities_from_today = []
+    for activity_id in activity_of_interest.activity_ids:
+        activities_from_today.append(get_detailed_activity(strava_client, activity_id))
+    if len(activities_from_today) == 0:
+        activities_from_today = [DetailedActivity()]
+
+    return activities_from_today
+
+
 def gen_coaches_notes(
     user: UserRow,
     activity_of_interest: DailyActivity,
     past_7_days: List[DailyActivity],
 ) -> str:
-    strava_client = auth_manager.get_strava_client(user.athlete_id)
-    detailed_activity_of_interest = get_detailed_activity(
-        strava_client, activity_of_interest.id
-    )
+    """
+    Generate comments from the coach for a given activity
 
+    :param user: user entity
+    :param activity_of_interest: The activity of interest
+    :param past_7_days: List of past 7 days of activities
+    :return: Comments from the coach for the activity
+    """
     message = COACHES_NOTES_PROMPT.substitute(
         COACH_ROLE=COACH_ROLE,
         user_preferences=user.preferences,
         past_7_days=past_7_days,
-        activity_of_interest=detailed_activity_of_interest,
+        activities_from_today=get_detailed_activities_from_today(
+            user=user, activity_of_interest=activity_of_interest
+        ),
         day_of_week=activity_of_interest.day_of_week,
     )
     return get_completion(message=message)
