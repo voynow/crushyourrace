@@ -10,15 +10,22 @@ struct mobileApp: App {
       ContentView(appState: appState)
         .environmentObject(appState)
         .onAppear {
-          if let token = UserDefaults.standard.string(forKey: "jwt_token") {
+          let token = UserDefaults.standard.string(forKey: "jwt_token")
+          let userId = UserDefaults.standard.string(forKey: "user_id")
+
+          if token != nil || userId != nil {
             appState.status = .loggedIn
             appState.jwtToken = token
-            appState.userId = UserDefaults.standard.string(forKey: "user_id")
+            appState.userId = userId
+
             if let storedStrategy = UserDefaults.standard.string(forKey: "auth_strategy"),
               let strategy = AuthStrategy(rawValue: storedStrategy)
             {
               appState.authStrategy = strategy
             }
+          } else {
+            print("[mobileApp] No authentication found")
+            appState.status = .loggedOut
           }
         }
     }
