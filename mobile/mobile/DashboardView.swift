@@ -63,6 +63,15 @@ struct DashboardView: View {
           .tag(1)
         }
         .accentColor(ColorTheme.primary)
+        .onAppear {
+          let appearance = UITabBarAppearance()
+          appearance.configureWithOpaqueBackground()
+          appearance.backgroundColor = UIColor(ColorTheme.black)
+
+          UITabBar.appearance().standardAppearance = appearance
+          UITabBar.appearance().scrollEdgeAppearance = appearance
+          UITabBar.appearance().unselectedItemTintColor = UIColor(ColorTheme.lightGrey)
+        }
       }
       .navigationBarHidden(true)
     }

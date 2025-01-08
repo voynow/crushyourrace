@@ -3,34 +3,64 @@ import SwiftUI
 struct ContentView: View {
   @EnvironmentObject var appState: AppState
   @StateObject private var authManager: AuthManager
+  @State private var isInitialLoad = true
+  @State private var hasCompletedInitialTransition = false
 
   init(appState: AppState) {
     _authManager = StateObject(wrappedValue: AuthManager(appState: appState))
+    print("[ContentView] Initialized")
   }
 
   var body: some View {
-    ZStack {
-      switch appState.status {
-      case .newUser:
-        OnboardingView()
-      case .loggedIn:
-        ZStack {
-          DashboardView()
+    let _ = print("[ContentView] Rendering body, status: \(appState.status)")
 
-          if appState.showProfile {
-            ProfileView(
-              isPresented: $appState.showProfile,
-              showProfile: $appState.showProfile
-            )
-            .zIndex(2)
+    ZStack {
+      ColorTheme.black.edgesIgnoringSafeArea(.all)
+
+      Group {
+        if !hasCompletedInitialTransition {
+          LoadingView()
+        } else {
+          switch appState.status {
+          case .newUser:
+            OnboardingView()
+              .transition(.opacity)
+          case .loggedIn:
+            ZStack {
+              DashboardView()
+                .transition(.opacity)
+
+              if appState.showProfile {
+                ProfileView(
+                  isPresented: $appState.showProfile,
+                  showProfile: $appState.showProfile
+                )
+                .zIndex(2)
+                .transition(.opacity)
+              }
+            }
+          case .loggedOut:
+            LandingPageView(authManager: authManager)
+              .transition(.opacity)
+          case .loading:
+            LoadingView()
+              .transition(.opacity)
+          case .generatingPlan:
+            WaitingForGenerationView(isAppleAuth: appState.authStrategy == .apple)
+              .transition(.opacity)
           }
         }
-      case .loggedOut:
-        LandingPageView(authManager: authManager)
-      case .loading:
-        LoadingView()
-      case .generatingPlan:
-        WaitingForGenerationView(isAppleAuth: appState.authStrategy == .apple)
+      }
+      .animation(.easeInOut(duration: 0.3), value: appState.status)
+    }
+    .onAppear {
+      print("[ContentView] View appeared, current status: \(appState.status)")
+      print("[ContentView] Auth strategy: \(appState.authStrategy)")
+
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        withAnimation {
+          hasCompletedInitialTransition = true
+        }
       }
     }
   }
