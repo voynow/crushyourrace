@@ -11,70 +11,75 @@ struct DashboardView: View {
   @State private var trainingPlan: TrainingPlan?
 
   var body: some View {
-    NavigationView {
-      ZStack {
-        TabView(selection: $appState.selectedTab) {
-          VStack {
-            DashboardNavbar(
-              onLogout: { appState.clearAuthState() }, showProfile: $appState.showProfile
-            )
-            .background(ColorTheme.black)
-            .zIndex(1)
+    let _ = print("[DashboardView] Rendering, auth strategy: \(appState.authStrategy)")
 
-            ScrollView {
-              if appState.authStrategy == .apple {
-                VStack(spacing: 16) {
-                  DashboardSkeletonView()
-                    .overlay(StravaConnectOverlay())
-                }
-              } else if let data = trainingWeekData {
-                TrainingWeekView(
-                  trainingWeekData: data,
-                  weeklySummaries: weeklySummaries
-                )
-              } else if isLoadingTrainingWeek {
-                DashboardSkeletonView()
-              } else {
-                Text("No training data available")
-                  .font(.headline)
-                  .foregroundColor(ColorTheme.lightGrey)
-              }
-            }
-            .refreshable {
-              if appState.authStrategy != .apple {
-                fetchData()
-              }
-            }
-          }
-          .background(ColorTheme.black.edgesIgnoringSafeArea(.all))
-          .tabItem {
-            Image(systemName: "calendar")
-            Text("Training Week")
-          }
-          .tag(0)
-          TrainingPlanView(
-            historicalWeeks: weeklySummaries ?? [],
-            preloadedPlan: trainingPlan
+    ZStack {
+      let _ = print("[DashboardView] Inside ZStack")
+      ColorTheme.black.edgesIgnoringSafeArea(.all)
+
+      TabView(selection: $appState.selectedTab) {
+        let _ = print("[DashboardView] Inside TabView, selectedTab: \(appState.selectedTab)")
+        VStack {
+          DashboardNavbar(
+            onLogout: { appState.clearAuthState() }, showProfile: $appState.showProfile
           )
-          .tabItem {
-            Image(systemName: "chart.bar.fill")
-            Text("Training Plan")
-          }
-          .tag(1)
-        }
-        .accentColor(ColorTheme.primary)
-        .onAppear {
-          let appearance = UITabBarAppearance()
-          appearance.configureWithOpaqueBackground()
-          appearance.backgroundColor = UIColor(ColorTheme.black)
+          .background(ColorTheme.black)
+          .zIndex(1)
 
-          UITabBar.appearance().standardAppearance = appearance
-          UITabBar.appearance().scrollEdgeAppearance = appearance
-          UITabBar.appearance().unselectedItemTintColor = UIColor(ColorTheme.lightGrey)
+          ScrollView {
+            if appState.authStrategy == .apple {
+              let _ = print("[DashboardView] Rendering Apple auth content")
+              VStack(spacing: 16) {
+                DashboardSkeletonView()
+                  .overlay(StravaConnectOverlay())
+              }
+            } else if let data = trainingWeekData {
+              TrainingWeekView(
+                trainingWeekData: data,
+                weeklySummaries: weeklySummaries
+              )
+            } else if isLoadingTrainingWeek {
+              DashboardSkeletonView()
+            } else {
+              Text("No training data available")
+                .font(.headline)
+                .foregroundColor(ColorTheme.lightGrey)
+            }
+          }
+          .refreshable {
+            if appState.authStrategy != .apple {
+              fetchData()
+            }
+          }
         }
+        .background(ColorTheme.black.edgesIgnoringSafeArea(.all))
+        .tabItem {
+          Image(systemName: "calendar")
+          Text("Training Week")
+        }
+        .tag(0)
+        TrainingPlanView(
+          historicalWeeks: weeklySummaries ?? [],
+          preloadedPlan: trainingPlan
+        )
+        .tabItem {
+          Image(systemName: "chart.bar.fill")
+          Text("Training Plan")
+        }
+        .tag(1)
       }
-      .navigationBarHidden(true)
+      .accentColor(ColorTheme.primary)
+      .onAppear {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(ColorTheme.black)
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().unselectedItemTintColor = UIColor(ColorTheme.lightGrey)
+      }
     }
+    .navigationBarHidden(true)
     .onAppear {
       fetchData()
       if appState.notificationStatus == .notDetermined {
