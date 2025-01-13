@@ -12,47 +12,48 @@ struct ContentView: View {
   }
 
   var body: some View {
-    let _ = print("[ContentView] Rendering body, status: \(appState.status)")
+    NavigationView {
+      ZStack {
+        ColorTheme.black.edgesIgnoringSafeArea(.all)
 
-    ZStack {
-      ColorTheme.black.edgesIgnoringSafeArea(.all)
-
-      Group {
-        if !hasCompletedInitialTransition {
-          LoadingView()
-        } else {
-          switch appState.status {
-          case .newUser:
-            OnboardingView()
-              .transition(.opacity)
-          case .loggedIn:
-            ZStack {
-              DashboardView()
-                .transition(.opacity)
-
-              if appState.showProfile {
-                ProfileView(
-                  isPresented: $appState.showProfile,
-                  showProfile: $appState.showProfile
-                )
-                .zIndex(2)
-                .transition(.opacity)
-              }
-            }
-          case .loggedOut:
-            LandingPageView(authManager: authManager)
-              .transition(.opacity)
-          case .loading:
+        Group {
+          if !hasCompletedInitialTransition {
             LoadingView()
-              .transition(.opacity)
-          case .generatingPlan:
-            WaitingForGenerationView(isAppleAuth: appState.authStrategy == .apple)
-              .transition(.opacity)
+          } else {
+            switch appState.status {
+            case .newUser:
+              OnboardingView()
+                .transition(.opacity)
+            case .loggedIn:
+              ZStack {
+                DashboardView()
+                  .transition(.opacity)
+
+                if appState.showProfile {
+                  ProfileView(
+                    isPresented: $appState.showProfile,
+                    showProfile: $appState.showProfile
+                  )
+                  .zIndex(2)
+                  .transition(.opacity)
+                }
+              }
+            case .loggedOut:
+              LandingPageView(authManager: authManager)
+                .transition(.opacity)
+            case .loading:
+              LoadingView()
+                .transition(.opacity)
+            case .generatingPlan:
+              WaitingForGenerationView(isAppleAuth: appState.authStrategy == .apple)
+                .transition(.opacity)
+            }
           }
         }
+        .animation(.easeInOut(duration: 0.3), value: appState.status)
       }
-      .animation(.easeInOut(duration: 0.3), value: appState.status)
     }
+    .navigationViewStyle(StackNavigationViewStyle())
     .onAppear {
       print("[ContentView] View appeared, current status: \(appState.status)")
       print("[ContentView] Auth strategy: \(appState.authStrategy)")
