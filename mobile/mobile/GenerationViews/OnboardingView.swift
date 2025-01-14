@@ -13,7 +13,7 @@ struct OnboardingView: View {
     ZStack {
       ColorTheme.black.edgesIgnoringSafeArea(.all)
 
-      if !viewModel.hasSubmittedEmail {
+      if appState.authStrategy == .strava && !viewModel.hasSubmittedEmail {
         EmailSetupView(
           email: $viewModel.email,
           onSubmit: viewModel.handleEmailSubmission
@@ -39,6 +39,10 @@ struct OnboardingView: View {
     }
     .onAppear {
       viewModel.appState = appState
+      if appState.authStrategy == .apple {
+        viewModel.hasSubmittedEmail = true
+        viewModel.showRaceSetup = true
+      }
     }
   }
 }
