@@ -10,26 +10,30 @@ struct LandingPageView: View {
   }
 
   var body: some View {
-    VStack(spacing: 8) {
-      OnboardingCarousel(showCloseButton: false)
+    ZStack {
+      VStack(spacing: 8) {
+        OnboardingCarousel(showCloseButton: false)
 
-      VStack(spacing: 16) {
-        signInWithStravaButton
-        signInWithAppleButton
+        VStack(spacing: 16) {
+          signInWithStravaButton
+          signInWithAppleButton
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 32)
       }
-      .padding(.horizontal, 24)
-      .padding(.bottom, 32)
+
+      if authManager.showAlert {
+        ToastView(
+          message: "Install the Strava app or use another login method to continue.",
+          isShowing: $authManager.showAlert
+        )
+        .transition(.move(edge: .top))
+        .animation(.easeInOut, value: authManager.showAlert)
+      }
     }
     .background(ColorTheme.black)
     .onOpenURL { url in
       authManager.handleURL(url)
-    }
-    .alert(isPresented: $authManager.showAlert) {
-      Alert(
-        title: Text("Strava App Not Installed"),
-        message: Text("Please install the Strava app to continue."),
-        dismissButton: .default(Text("OK"))
-      )
     }
   }
 
@@ -57,7 +61,7 @@ struct LandingPageView: View {
 
         Text("Recommended")
           .font(.system(size: 12, weight: .medium))
-          .foregroundColor(ColorTheme.black)
+          .foregroundColor(ColorTheme.primaryDark)
           .padding(.horizontal, 8)
           .padding(.vertical, 4)
           .background(ColorTheme.primaryLight)
@@ -79,6 +83,38 @@ struct LandingPageView: View {
     .signInWithAppleButtonStyle(.black)
     .frame(height: 50)
     .cornerRadius(12)
+  }
+}
+
+struct ToastView: View {
+  let message: String
+  @Binding var isShowing: Bool
+
+  var body: some View {
+    VStack {
+      HStack(spacing: 12) {
+        Image(systemName: "exclamationmark.circle.fill")
+          .foregroundColor(.white)
+
+        Text(message)
+          .font(.system(size: 14, weight: .medium))
+          .foregroundColor(.white)
+
+        Spacer()
+
+        Button(action: { isShowing = false }) {
+          Image(systemName: "xmark")
+            .foregroundColor(.white)
+        }
+      }
+      .padding()
+      .background(ColorTheme.primary.opacity(0.8))
+      .cornerRadius(12)
+      .shadow(radius: 4)
+    }
+    .padding(.horizontal, 16)
+    .padding(.top, 8)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
   }
 }
 
