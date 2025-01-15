@@ -8,21 +8,18 @@ struct OnboardingEmailView: View {
 
   var body: some View {
     VStack(spacing: 40) {
-      Spacer()
+      Color.clear.frame(height: 80)
 
       VStack(spacing: 32) {
 
-        VStack(spacing: 16) {
-          Spacer()
-            .frame(height: 20)
-          HStack(spacing: 0) {
-            Text("Crush ")
-              .font(.system(size: 40, weight: .black))
-              .foregroundColor(ColorTheme.primaryLight)
-            Text("Your Race")
-              .font(.system(size: 40, weight: .black))
-              .foregroundColor(ColorTheme.primary)
-          }
+        HStack(spacing: 0) {
+          Text("Crush ")
+            .font(.system(size: 40, weight: .black))
+            .foregroundColor(ColorTheme.primaryLight)
+          Text("Your Race")
+            .font(.system(size: 40, weight: .black))
+            .foregroundColor(ColorTheme.primary)
+
         }
         VStack(spacing: 24) {
           Text("Welcome! Let's get started")
@@ -69,6 +66,7 @@ struct OnboardingEmailView: View {
         }
       }
       .padding(32)
+
       Spacer()
     }
     .background(
