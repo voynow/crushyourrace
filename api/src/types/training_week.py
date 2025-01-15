@@ -14,6 +14,15 @@ class Day(StrEnum):
     SAT = "Sat"
     SUN = "Sun"
 
+    @classmethod
+    def _missing_(cls, value: str) -> "Day":
+        """Handle variations in day abbreviations"""
+        normalized = value.replace("Thu", "Thurs").replace("Tue", "Tues")
+        try:
+            return cls(normalized)
+        except ValueError:
+            raise ValueError(f"'{value}' is not a valid Day")
+
 
 class PseudoTrainingDay(BaseModel):
     day: Day

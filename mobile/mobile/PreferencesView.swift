@@ -136,7 +136,6 @@ struct PreferencesContent: View {
                   Text("Long Run").tag("long run")
                   Text("Speed Workout").tag("speed workout")
                   Text("Rest Day").tag("rest day")
-                  Text("Moderate Run").tag("moderate run")
                 }
                 .pickerStyle(MenuPickerStyle())
               )
