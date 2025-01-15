@@ -37,22 +37,33 @@ struct LandingPageView: View {
     Button(action: {
       authManager.authenticateWithStrava()
     }) {
-      HStack {
-        Image("stravaIcon")
-          .resizable()
-          .aspectRatio(contentMode: .fit)
-          .frame(height: 20)
-        Text("Sign in with Strava")
-          .font(.system(size: 19))
-          .fontWeight(.medium)
+      ZStack(alignment: .topTrailing) {
+        HStack {
+          Image("stravaIcon")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: 20)
+          Text("Sign in with Strava")
+            .font(.system(size: 19))
+            .fontWeight(.medium)
+        }
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity)
+        .frame(height: 50)
+        .background(ColorTheme.primary)
+        .foregroundColor(Color.white)
+        .cornerRadius(12)
+        .shadow(radius: 5)
+
+        Text("Recommended")
+          .font(.system(size: 12, weight: .medium))
+          .foregroundColor(ColorTheme.black)
+          .padding(.horizontal, 8)
+          .padding(.vertical, 4)
+          .background(ColorTheme.primaryLight)
+          .cornerRadius(8)
+          .offset(x: -8, y: -12)
       }
-      .padding(.horizontal)
-      .frame(maxWidth: .infinity)
-      .frame(height: 50)
-      .background(ColorTheme.primary)
-      .foregroundColor(Color.white)
-      .cornerRadius(12)
-      .shadow(radius: 5)
     }
   }
 
