@@ -38,6 +38,7 @@ class UserRow(BaseModel):
     email: Optional[str] = None
     created_at: datetime.datetime = datetime.datetime.now()
     user_id: Optional[str] = "default"
+    is_premium: Optional[bool] = False
 
 
 class UserAuthRow(BaseModel):

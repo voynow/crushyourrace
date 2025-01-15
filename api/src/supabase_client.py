@@ -412,3 +412,14 @@ def insert_feedback(feedback: FeedbackRow) -> None:
     """
     table = client.table(supabase_helpers.get_feedback_table_name())
     table.insert(feedback.dict()).execute()
+
+
+def update_user_premium(athlete_id: int, is_premium: bool) -> None:
+    """
+    Update user premium status
+
+    :param athlete_id: The ID of the athlete
+    :param is_premium: The premium status to update
+    """
+    table = client.table("user")
+    table.update({"is_premium": is_premium}).eq("athlete_id", athlete_id).execute()

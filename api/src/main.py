@@ -237,3 +237,9 @@ async def update_email(
 async def feedback(feedback: FeedbackRow):
     supabase_client.insert_feedback(feedback=feedback)
     return {"success": True}
+
+
+@app.post("/premium/")
+async def premium(user: UserRow = Depends(auth_manager.validate_user)):
+    supabase_client.update_user_premium(user.athlete_id, True)
+    return {"success": True}
