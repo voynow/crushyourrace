@@ -3,8 +3,9 @@ from enum import StrEnum
 from typing import List, Optional
 
 from pydantic import BaseModel
+from src.constants import INVALID_ATHLETE_ID
 from src.types.training_week import Day, SessionType
-from utils import datetime_now_est
+from src.utils import datetime_now_est
 
 
 class RaceDistance(StrEnum):
@@ -43,7 +44,7 @@ class UserRow(BaseModel):
 
 
 class UserAuthRow(BaseModel):
-    athlete_id: Optional[int] = -1
+    athlete_id: Optional[int] = INVALID_ATHLETE_ID
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
     expires_at: Optional[datetime.datetime] = None
