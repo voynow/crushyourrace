@@ -7,6 +7,7 @@ from uuid import uuid4
 import orjson
 from dotenv import load_dotenv
 from src import auth_manager, supabase_helpers
+from src.constants import FREE_TRIAL_DAYS
 from src.types.feedback import FeedbackRow
 from src.types.mileage_recommendation import (
     MileageRecommendationRow,
@@ -19,6 +20,7 @@ from src.types.training_week import (
     TrainingWeek,
 )
 from src.types.user import Preferences, UserAuthRow, UserRow
+from src.utils import datetime_now_est
 from supabase import Client, create_client
 
 load_dotenv()
@@ -423,3 +425,19 @@ def update_user_premium(athlete_id: int, is_premium: bool) -> None:
     """
     table = client.table("user")
     table.update({"is_premium": is_premium}).eq("athlete_id", athlete_id).execute()
+
+
+def show_paywall(user: UserRow) -> bool:
+    """
+    If free trial is not over, return False (don't show paywall)
+    Else return False if is_premium, True otherwise
+
+    :param user: A UserRow object
+    :return: True if the user should see the paywall, False otherwise
+    """
+    start_dt = user.created_at
+    end_dt = start_dt + datetime.timedelta(days=FREE_TRIAL_DAYS)
+    if end_dt > datetime_now_est():
+        return False
+    else:
+        return not user.is_premium

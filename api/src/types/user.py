@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 from src.types.training_week import Day, SessionType
+from utils import datetime_now_est
 
 
 class RaceDistance(StrEnum):
@@ -36,7 +37,7 @@ class UserRow(BaseModel):
     athlete_id: Optional[int] = -1
     preferences: Optional[Preferences] = Preferences()
     email: Optional[str] = None
-    created_at: datetime.datetime = datetime.datetime.now()
+    created_at: datetime.datetime = datetime_now_est()
     user_id: Optional[str] = "default"
     is_premium: Optional[bool] = False
 
