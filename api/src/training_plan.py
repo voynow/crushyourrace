@@ -7,7 +7,7 @@ from src.constants import COACH_ROLE
 from src.llm import get_completion_json
 from src.types.activity import WeekSummary
 from src.types.training_plan import TrainingPlan, WeekRange
-from src.types.user import UserRow
+from src.types.user import User
 
 
 def get_mileage_stats(weekly_mileages):
@@ -72,7 +72,7 @@ def get_week_ranges_to_race(
 
 
 def gen_training_plan(
-    user: UserRow, weekly_summaries: List[WeekSummary], dt: datetime.datetime
+    user: User, weekly_summaries: List[WeekSummary], dt: datetime.datetime
 ) -> TrainingPlan:
     """
     Generate a training plan for the user given training history
@@ -155,7 +155,7 @@ Given this information, now you must generate a training plan for your client ov
 
 
 def gen_training_plan_pipeline(
-    user: UserRow, weekly_summaries: List[WeekSummary], dt: datetime.datetime
+    user: User, weekly_summaries: List[WeekSummary], dt: datetime.datetime
 ) -> TrainingPlan:
     """
     Generate a training plan for the user given training history

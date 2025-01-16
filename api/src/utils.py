@@ -14,6 +14,13 @@ def datetime_now_est() -> datetime.datetime:
     return datetime.datetime.now(ZoneInfo("America/New_York"))
 
 
+def make_tz_aware(dt: datetime.datetime) -> datetime.datetime:
+    """Make a datetime object timezone-aware"""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=ZoneInfo("America/New_York"))
+    return dt
+
+
 def round_all_floats(model: BaseModel, precision: int = 2) -> BaseModel:
     """Round all float fields in a pydantic model to a given precision"""
     for field_name, field in model.__fields__.items():
