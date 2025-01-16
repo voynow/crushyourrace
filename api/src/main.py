@@ -8,7 +8,6 @@ from fastapi import (
     Depends,
     FastAPI,
     Form,
-    Header,
     HTTPException,
     Request,
     Response,
@@ -19,7 +18,7 @@ from src.types.feedback import FeedbackRow
 from src.types.training_plan import TrainingPlan
 from src.types.training_week import FullTrainingWeek
 from src.types.update_pipeline import ExeType
-from src.types.user import UserRow
+from src.types.user import User
 from src.types.webhook import StravaEvent
 from src.update_pipeline import update_all_users, update_training_week
 
@@ -42,7 +41,7 @@ async def health():
 
 
 @app.get("/training-week/", response_model=FullTrainingWeek)
-async def training_week(user: UserRow = Depends(auth_manager.validate_user)):
+async def training_week(user: User = Depends(auth_manager.validate_user)):
     """
     Retrieve the most recent training_week row by athlete_id
     curl -X GET "http://trackflow-alb-499532887.us-east-1.elb.amazonaws.com/training_week/" \
@@ -57,7 +56,7 @@ async def training_week(user: UserRow = Depends(auth_manager.validate_user)):
 @app.post("/device-token/")
 async def update_device_token(
     device_token: str = Body(..., embed=True),
-    user: UserRow = Depends(auth_manager.validate_user),
+    user: User = Depends(auth_manager.validate_user),
 ) -> dict:
     """
     Update device token for push notifications
@@ -74,7 +73,7 @@ async def update_device_token(
 
 @app.post("/preferences/")
 async def update_preferences(
-    preferences: dict, user: UserRow = Depends(auth_manager.validate_user)
+    preferences: dict, user: User = Depends(auth_manager.validate_user)
 ) -> dict:
     """
     Update user preferences
@@ -90,7 +89,7 @@ async def update_preferences(
 
 
 @app.get("/profile/")
-async def get_profile(user: UserRow = Depends(auth_manager.validate_user)) -> dict:
+async def get_profile(user: User = Depends(auth_manager.validate_user)) -> dict:
     """
     Retrieve user profile information including Strava details
 
@@ -112,7 +111,7 @@ async def get_profile(user: UserRow = Depends(auth_manager.validate_user)) -> di
 
 @app.get("/weekly-summaries/")
 async def get_weekly_summaries(
-    user: UserRow = Depends(auth_manager.validate_user),
+    user: User = Depends(auth_manager.validate_user),
 ) -> dict:
     """
     Retrieve weekly training summaries for the authenticated user
@@ -173,7 +172,7 @@ async def strava_webhook(request: Request, background_tasks: BackgroundTasks) ->
 
 @app.post("/refresh/")
 async def refresh_user_data(
-    user: UserRow = Depends(auth_manager.validate_user),
+    user: User = Depends(auth_manager.validate_user),
 ) -> dict:
     """
     Trigger new week and mid-week updates
@@ -202,7 +201,7 @@ async def update_all_users_trigger(request: Request) -> dict:
 
 @app.get("/training-plan/", response_model=TrainingPlan)
 async def get_training_plan(
-    user: UserRow = Depends(auth_manager.validate_user),
+    user: User = Depends(auth_manager.validate_user),
 ) -> TrainingPlan:
     """
     Get the training plan for a user

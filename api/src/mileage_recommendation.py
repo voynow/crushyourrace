@@ -12,7 +12,7 @@ from src.types.mileage_recommendation import (
     MileageRecommendationRow,
 )
 from src.types.update_pipeline import ExeType
-from src.types.user import Preferences, UserRow
+from src.types.user import Preferences, User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -49,7 +49,7 @@ Your task is to provide training recommendations for the upcoming week."""
 
 
 def gen_mileage_rec_wrapper(
-    user: UserRow, daily_activity: List[DailyActivity], dt: datetime.datetime
+    user: User, daily_activity: List[DailyActivity], dt: datetime.datetime
 ) -> MileageRecommendation:
     """
     Abstraction for mileage rec generation, either pulled from training plan
@@ -84,7 +84,7 @@ def gen_mileage_rec_wrapper(
 
 
 def create_new_mileage_recommendation(
-    user: UserRow,
+    user: User,
     daily_activity: List[DailyActivity],
     dt: datetime.datetime,
 ) -> MileageRecommendation:
@@ -134,7 +134,7 @@ def get_week_of_year_and_year(
 
 
 def get_or_gen_mileage_recommendation(
-    user: UserRow,
+    user: User,
     daily_activity: List[DailyActivity],
     exe_type: ExeType,
     dt: datetime,

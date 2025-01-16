@@ -15,14 +15,14 @@ from src import (
 from src.constants import INVALID_ATHLETE_ID
 from src.types.training_week import FullTrainingWeek
 from src.types.update_pipeline import ExeType
-from src.types.user import UserRow
+from src.types.user import User
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
 def _update_training_week(
-    user: UserRow, exe_type: ExeType, dt: datetime.datetime
+    user: User, exe_type: ExeType, dt: datetime.datetime
 ) -> FullTrainingWeek:
     """
     Single function to handle all training week updates
@@ -49,7 +49,7 @@ def _update_training_week(
 
 
 def update_training_week(
-    user: UserRow, exe_type: ExeType, dt: datetime.datetime
+    user: User, exe_type: ExeType, dt: datetime.datetime
 ) -> dict:
     """
     Full pipeline with update training week & push notification side effects
@@ -69,7 +69,7 @@ def update_training_week(
 
 
 def update_training_week_wrapper(
-    user: UserRow, exe_type: ExeType, dt: datetime.datetime
+    user: User, exe_type: ExeType, dt: datetime.datetime
 ) -> dict:
     """
     Wrapper to handle errors in the update pipeline

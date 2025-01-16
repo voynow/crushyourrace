@@ -1,6 +1,15 @@
 import os
 
 
+def get_user_table_name() -> str:
+    """
+    Inject test_user table name during testing
+
+    :return: The name of the user table
+    """
+    return "user_combined"
+
+
 def get_training_week_table_name() -> str:
     """
     Inject test_training_week table name during testing

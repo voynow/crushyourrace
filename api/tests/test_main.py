@@ -23,7 +23,7 @@ def setup_test_environment():
 
 def test_get_training_week():
     """Test successful retrieval of training week"""
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
 
     response = client.get(
         "/training-week/", headers={"Authorization": f"Bearer {user_auth.jwt_token}"}
@@ -34,7 +34,7 @@ def test_get_training_week():
 
 def test_update_device_token():
     """Test successful update of device token"""
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     response = client.post(
         "/device-token/",
         json={"device_token": user_auth.device_token},
@@ -45,7 +45,7 @@ def test_update_device_token():
 
 def test_update_preferences():
     """Test successful update of preferences"""
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     user = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     response = client.post(
         "/preferences/",
@@ -57,7 +57,7 @@ def test_update_preferences():
 
 def test_get_profile():
     """Test successful retrieval of profile"""
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     response = client.get(
         "/profile/", headers={"Authorization": f"Bearer {user_auth.jwt_token}"}
     )
@@ -66,7 +66,7 @@ def test_get_profile():
 
 def test_get_weekly_summaries():
     """Test successful retrieval of weekly summaries"""
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     response = client.get(
         "/weekly-summaries/", headers={"Authorization": f"Bearer {user_auth.jwt_token}"}
     )
@@ -97,13 +97,13 @@ def test_strava_webhook():
 
 
 def test_apple_push_notification():
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     send_push_notification(
         device_token=user_auth.device_token,
         title="Test Notification ✔️",
         body="Don't panic! This is only a test.",
     )
-    # user_auth = supabase_client.get_user_auth(os.environ["RACHELS_ATHLETE_ID"])
+    # user_auth = supabase_client.get_user(os.environ["RACHELS_ATHLETE_ID"])
     # send_push_notification(
     #     device_token=user_auth.device_token,
     #     title="Test Notification ✔️",
@@ -113,7 +113,7 @@ def test_apple_push_notification():
 
 def test_get_training_plan():
     """Test successful retrieval of training plan"""
-    user_auth = supabase_client.get_user_auth(os.environ["JAMIES_ATHLETE_ID"])
+    user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     response = client.get(
         "/training-plan/", headers={"Authorization": f"Bearer {user_auth.jwt_token}"}
     )

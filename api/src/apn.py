@@ -7,8 +7,8 @@ import traceback
 import httpx
 import jwt
 from dotenv import load_dotenv
-from src.supabase_client import get_user_auth
-from src.types.user import UserRow
+from src.supabase_client import get_user
+from src.types.user import User
 
 load_dotenv()
 
@@ -90,16 +90,16 @@ def send_push_notification(device_token: str, title: str, body: str):
     return response
 
 
-def send_push_notif_wrapper(user: UserRow):
+def send_push_notif_wrapper(user: User):
     """Send push notification to user if they have a valid device token."""
-    user_auth = get_user_auth(user.athlete_id)
-    if not user_auth.device_token:
+    user = get_user(user.athlete_id)
+    if not user.device_token:
         logger.info(f"No device token for user {user.athlete_id}")
         return
 
     try:
         send_push_notification(
-            device_token=user_auth.device_token,
+            device_token=user.device_token,
             title="Crush Your Race",
             body="Your training week has been updated!",
         )

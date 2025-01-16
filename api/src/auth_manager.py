@@ -1,13 +1,13 @@
-import datetime
 import logging
 import os
-from typing import Optional
 
 import jwt
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src import email_manager, supabase_client
-from src.types.user import UserAuthRow, UserRow
+from src import supabase_client, utils
+from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_USER_ID
+from src.types.user import User
+from src.utils import datetime_now_est
 from stravalib.client import Client
 
 logger = logging.getLogger(__name__)
@@ -49,13 +49,13 @@ def decode_jwt(jwt_token: str, verify_exp: bool = True) -> int:
     return payload["athlete_id"]
 
 
-def refresh_and_update_user_token(athlete_id: int, refresh_token: str) -> UserAuthRow:
+def refresh_and_update_user_token(athlete_id: int, refresh_token: str) -> User:
     """
     Refresh the user's Strava token and update database
 
     :param athlete_id: strava internal identifier
     :param refresh_token: refresh token for Strava API
-    :return: UserAuthRow
+    :return: User
     """
     logger.info(f"Refreshing and updating token for athlete {athlete_id}")
     access_info = strava_client.refresh_access_token(
@@ -63,20 +63,31 @@ def refresh_and_update_user_token(athlete_id: int, refresh_token: str) -> UserAu
         client_secret=os.environ["STRAVA_CLIENT_SECRET"],
         refresh_token=refresh_token,
     )
+
     new_jwt_token = generate_jwt(
         athlete_id=athlete_id, expires_at=access_info["expires_at"]
     )
 
-    user_auth = UserAuthRow(
+
+    existing_user = supabase_client.get_user(athlete_id)
+
+    user = User(
         athlete_id=athlete_id,
         access_token=access_info["access_token"],
         refresh_token=access_info["refresh_token"],
         expires_at=access_info["expires_at"],
         jwt_token=new_jwt_token,
         device_token=supabase_client.get_device_token(athlete_id),
+        email=existing_user.email,
+        preferences=existing_user.preferences,
+        is_premium=existing_user.is_premium,
+        user_id=existing_user.user_id,
+        identity_token=existing_user.identity_token,
+        created_at=existing_user.created_at,
     )
-    supabase_client.upsert_user_auth(user_auth)
-    return user_auth
+
+    supabase_client.upsert_user(user)
+    return user
 
 
 def validate_and_refresh_token(token: str) -> int:
@@ -92,9 +103,9 @@ def validate_and_refresh_token(token: str) -> int:
         try:
             # If the token is expired, decode athlete_id and refresh
             athlete_id = decode_jwt(token, verify_exp=False)
-            user_auth = supabase_client.get_user_auth(athlete_id)
+            user = supabase_client.get_user(athlete_id)
             refresh_and_update_user_token(
-                athlete_id=athlete_id, refresh_token=user_auth.refresh_token
+                athlete_id=athlete_id, refresh_token=user.refresh_token
             )
         except jwt.DecodeError:
             logger.error("Invalid JWT token")
@@ -120,7 +131,7 @@ def validate_and_refresh_token(token: str) -> int:
 
 async def validate_user(
     credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
-) -> UserRow:
+) -> User:
     """
     Dependency that validates the JWT token from the Authorization header
 
@@ -136,39 +147,39 @@ async def validate_user(
     return supabase_client.get_user(athlete_id)
 
 
-def authenticate_athlete(athlete_id: int) -> UserAuthRow:
+def authenticate_athlete(athlete_id: int) -> User:
     """
     Authenticate athlete with valid token, refresh if necessary
 
     :param athlete_id: strava internal identifier
-    :return: UserAuthRow
+    :return: User
     """
-    user_auth = supabase_client.get_user_auth(athlete_id)
-    if datetime.datetime.now(datetime.timezone.utc) < user_auth.expires_at:
-        return user_auth
-    return refresh_and_update_user_token(athlete_id, user_auth.refresh_token)
+    user = supabase_client.get_user(athlete_id)
+    if datetime_now_est() < utils.make_tz_aware(user.expires_at):
+        return user
+    return refresh_and_update_user_token(athlete_id, user.refresh_token)
 
 
-def get_configured_strava_client(user_auth: UserAuthRow) -> Client:
-    strava_client.access_token = user_auth.access_token
-    strava_client.refresh_token = user_auth.refresh_token
-    strava_client.token_expires_at = user_auth.expires_at
+def get_configured_strava_client(user: User) -> Client:
+    strava_client.access_token = user.access_token
+    strava_client.refresh_token = user.refresh_token
+    strava_client.token_expires_at = user.expires_at
     return strava_client
 
 
 def get_strava_client(athlete_id: int) -> Client:
     """Interface for retrieving a Strava client with valid authentication"""
-    user_auth = authenticate_athlete(athlete_id)
-    return get_configured_strava_client(user_auth)
+    user = authenticate_athlete(athlete_id)
+    return get_configured_strava_client(user)
 
 
-def authenticate_with_code(code: str) -> UserAuthRow:
+def strava_authenticate(code: str) -> User:
     """
     Authenticate athlete with code from Strava, exchange with strava client for
     token, generate new JWT, and update database
 
     :param code: temporary authorization code
-    :return: UserAuthRow
+    :return: User
     """
     token = strava_client.exchange_code_for_token(
         client_id=os.environ["STRAVA_CLIENT_ID"],
@@ -183,70 +194,30 @@ def authenticate_with_code(code: str) -> UserAuthRow:
 
     jwt_token = generate_jwt(athlete_id=athlete.id, expires_at=token["expires_at"])
 
-    user_auth_row = UserAuthRow(
+    maybe_existing_user = supabase_client.get_or_create_user(
+        athlete_id=athlete.id, user_id=DEFAULT_USER_ID
+    )
+
+    user = User(
         athlete_id=athlete.id,
         access_token=strava_client.access_token,
         refresh_token=strava_client.refresh_token,
         expires_at=strava_client.token_expires_at,
         jwt_token=jwt_token,
         device_token=supabase_client.get_device_token(athlete.id),
+        email=maybe_existing_user.email,
+        preferences=maybe_existing_user.preferences,
+        is_premium=maybe_existing_user.is_premium,
+        user_id=maybe_existing_user.user_id,
+        identity_token=maybe_existing_user.identity_token,
+        created_at=maybe_existing_user.created_at,
     )
-    supabase_client.upsert_user_auth(user_auth_row)
-    return user_auth_row
 
-
-def authenticate_without_code(user_id: str, identity_token: str) -> UserAuthRow:
-    """
-    Authenticate athlete with Apple code, exchange with strava client for token,
-    generate new JWT, and update database
-
-    :param user_id: Apple user ID
-    :param identity_token: Apple identity token
-    :param email: User's email (optional)
-    :return: UserAuthRow
-    """
-    user_auth_row = UserAuthRow(user_id=user_id, identity_token=identity_token)
-    supabase_client.upsert_user_auth(user_auth_row)
-    return user_auth_row
-
-
-def signup(user_auth: UserAuthRow) -> dict:
-    """
-    Sign up a new user
-
-    :param user_auth: UserAuthRow
-    :return: Dictionary with success status and JWT token
-    """
-    supabase_client.upsert_user(
-        UserRow(athlete_id=user_auth.athlete_id, user_id=user_auth.user_id)
-    )
+    supabase_client.upsert_user(user)
     return {
         "success": True,
-        "jwt_token": user_auth.jwt_token,
-        "user_id": user_auth.user_id,
-        "is_new_user": True,
-    }
-
-
-def strava_authenticate(code: str) -> dict:
-    """
-    Authenticate with Strava code, and sign up the user if they don't exist.
-
-    :param code: Strava authorization code
-    :param email: User's email (optional)
-    :return: Dictionary with success status and JWT token
-    """
-    user_auth = authenticate_with_code(code)
-
-    if not supabase_client.does_user_exist(
-        athlete_id=user_auth.athlete_id, user_id=user_auth.user_id
-    ):
-        return signup(user_auth)
-
-    return {
-        "success": True,
-        "jwt_token": user_auth.jwt_token,
-        "user_id": user_auth.user_id,
+        "jwt_token": user.jwt_token,
+        "user_id": user.user_id,
         "is_new_user": False,
     }
 
@@ -259,15 +230,15 @@ def apple_authenticate(user_id: str, identity_token: str) -> dict:
     :param identity_token: Apple identity token
     :return: Dictionary with success status and JWT token
     """
-    user_auth = authenticate_without_code(user_id, identity_token)
-    if not supabase_client.does_user_exist(
-        athlete_id=user_auth.athlete_id, user_id=user_auth.user_id
-    ):
-        return signup(user_auth)
-
+    user = User(
+        athlete_id=DEFAULT_ATHLETE_ID,
+        user_id=user_id,
+        identity_token=identity_token,
+    )
+    supabase_client.upsert_user(user)
     return {
         "success": True,
-        "jwt_token": user_auth.jwt_token,
-        "user_id": user_auth.user_id,
+        "jwt_token": user.jwt_token,
+        "user_id": user.user_id,
         "is_new_user": False,
     }

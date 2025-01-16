@@ -9,9 +9,7 @@ from dotenv import load_dotenv
 from src import auth_manager, supabase_helpers
 from src.constants import FREE_TRIAL_DAYS
 from src.types.feedback import FeedbackRow
-from src.types.mileage_recommendation import (
-    MileageRecommendationRow,
-)
+from src.types.mileage_recommendation import MileageRecommendationRow
 from src.types.training_plan import TrainingPlan, TrainingPlanWeekRow
 from src.types.training_week import (
     EnrichedActivity,
@@ -19,7 +17,7 @@ from src.types.training_week import (
     TrainingSession,
     TrainingWeek,
 )
-from src.types.user import Preferences, UserAuthRow, UserRow
+from src.types.user import Preferences, User
 from src.utils import datetime_now_est
 from supabase import Client, create_client
 
@@ -46,49 +44,38 @@ def get_device_token(athlete_id: int) -> Optional[str]:
     :return: The device token for the user, or None if the user does not exist
     """
     try:
-        user_auth = get_user_auth(athlete_id)
-        return user_auth.device_token
+        user = get_user(athlete_id)
+        return user.device_token
     except ValueError:
         return None
 
 
-def get_user(athlete_id: int) -> UserRow:
+def get_user(athlete_id: int) -> User:
     """
     Get a user by athlete_id
 
     :param athlete_id: int
     :return: UserRow
     """
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
     response = table.select("*").eq("athlete_id", athlete_id).execute()
 
     if not response.data:
         raise ValueError(f"Could not find user with {athlete_id=}")
 
-    return UserRow(**response.data[0])
+    return User(**response.data[0])
 
 
-def list_users() -> list[UserRow]:
+def list_users() -> list[User]:
     """
-    List all users in the user_auth table
+    List all users in the user table
 
-    :return: list of UserAuthRow
+    :return: list of User
     """
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
     response = table.select("*").execute()
 
-    return [UserRow(**row) for row in response.data]
-
-
-def list_user_auths() -> list[UserAuthRow]:
-    """
-    List all user_auths in the user_auth table
-
-    :return: list of UserAuthRow
-    """
-    table = client.table("user_auth")
-    response = table.select("*").execute()
-    return [UserAuthRow(**row) for row in response.data]
+    return [User(**row) for row in response.data]
 
 
 def list_mileage_recommendations() -> list[MileageRecommendationRow]:
@@ -100,22 +87,6 @@ def list_mileage_recommendations() -> list[MileageRecommendationRow]:
     table = client.table(supabase_helpers.get_mileage_recommendation_table_name())
     response = table.select("*").execute()
     return [MileageRecommendationRow(**row) for row in response.data]
-
-
-def get_user_auth(athlete_id: int) -> UserAuthRow:
-    """
-    Get user_auth row by athlete_id
-
-    :param athlete_id: int
-    :return: APIResponse
-    """
-    table = client.table("user_auth")
-    response = table.select("*").eq("athlete_id", athlete_id).execute()
-
-    if not response.data:
-        raise ValueError(f"Cound not find user_auth row with {athlete_id=}")
-
-    return UserAuthRow(**response.data[0])
 
 
 def get_training_week(athlete_id: int) -> FullTrainingWeek:
@@ -164,23 +135,6 @@ def get_training_week(athlete_id: int) -> FullTrainingWeek:
         )
 
 
-def upsert_user_auth(user_auth_row: UserAuthRow) -> None:
-    """
-    Convert UserAuthRow to a dictionary, ensure json serializable expires_at,
-    and upsert into user_auth table handling duplicates on athlete_id and user_id
-
-    :param user_auth_row: A dictionary representation of UserAuthRow
-    """
-    row_data = user_auth_row.dict()
-    if isinstance(row_data["expires_at"], datetime.datetime):
-        row_data["expires_at"] = row_data["expires_at"].isoformat()
-
-    table = client.table("user_auth")
-    table.upsert(
-        row_data, on_conflict="athlete_id,user_id", returning="minimal"
-    ).execute()
-
-
 def update_user_device_token(athlete_id: str, device_token: str) -> None:
     """
     Update the device token for a user in the database.
@@ -205,21 +159,24 @@ def update_preferences(athlete_id: int, preferences: dict):
     except Exception as e:
         raise ValueError("Invalid preferences") from e
 
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
     table.update({"preferences": preferences}).eq("athlete_id", athlete_id).execute()
 
 
-def upsert_user(user_row: UserRow):
+def upsert_user(user: User):
     """
     Upsert a row into the user table
 
-    :param user_row: An instance of UserRow
+    :param user: An instance of User
     """
-    row_data = user_row.dict()
+    row_data = user.dict()
     if isinstance(row_data["created_at"], datetime.datetime):
         row_data["created_at"] = row_data["created_at"].isoformat()
 
-    table = client.table("user")
+    if isinstance(row_data["expires_at"], datetime.datetime):
+        row_data["expires_at"] = row_data["expires_at"].isoformat()
+
+    table = client.table(supabase_helpers.get_user_table_name())
     table.upsert(row_data, on_conflict="athlete_id,user_id").execute()
 
 
@@ -231,7 +188,7 @@ def does_user_exist(athlete_id: Optional[int], user_id: Optional[str]) -> bool:
     :param user_id: The ID of the user
     :return: True if the user exists, False otherwise
     """
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
     if athlete_id is None:
         response = table.select("*").eq("user_id", user_id).execute()
     else:
@@ -394,7 +351,7 @@ def update_user_email(
     :param jwt_token: Optional JWT token for authenticated users
     :param user_id: Optional user_id for new signups
     """
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
 
     if jwt_token:
         athlete_id = auth_manager.decode_jwt(jwt_token, verify_exp=True)
@@ -427,7 +384,7 @@ def update_user_premium(athlete_id: int, is_premium: bool) -> None:
     table.update({"is_premium": is_premium}).eq("athlete_id", athlete_id).execute()
 
 
-def show_paywall(user: UserRow) -> bool:
+def show_paywall(user: User) -> bool:
     """
     If free trial is not over, return False (don't show paywall)
     Else return False if is_premium, True otherwise
@@ -441,3 +398,16 @@ def show_paywall(user: UserRow) -> bool:
         return False
     else:
         return not user.is_premium
+
+
+def get_or_create_user(athlete_id: int, user_id: str) -> User:
+    """
+    If user exists, return user. If user does not exist, create user and return
+    """
+    table = client.table(supabase_helpers.get_user_table_name())
+    response = table.select("*").eq("athlete_id", athlete_id).execute()
+    if response.data:
+        return User(**response.data[0])
+    else:
+        upsert_user(User(athlete_id=athlete_id, user_id=user_id))
+        return get_user(athlete_id)
