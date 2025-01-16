@@ -20,7 +20,7 @@ from src.types.training_week import (
     TrainingWeek,
 )
 from src.types.update_pipeline import ExeType
-from src.types.user import Preferences, UserRow
+from src.types.user import Preferences, User
 
 
 def get_remaining_days_of_week(dt: datetime.datetime, exe_type: ExeType) -> List[str]:
@@ -76,7 +76,7 @@ def gen_pseudo_training_week(
 
 
 def gen_training_week(
-    user: UserRow,
+    user: User,
     pseudo_training_week: PseudoTrainingWeek,
     mileage_recommendation: MileageRecommendation,
 ) -> TrainingWeek:
@@ -96,7 +96,7 @@ def gen_training_week(
 
 
 def get_detailed_activities_from_today(
-    user: UserRow, activity_of_interest: DailyActivity
+    user: User, activity_of_interest: DailyActivity
 ) -> List[DetailedActivity]:
     """
     Extract detailed activities from a given activity. Rarely there is more than
@@ -118,7 +118,7 @@ def get_detailed_activities_from_today(
 
 
 def gen_coaches_notes(
-    user: UserRow,
+    user: User,
     activity_of_interest: DailyActivity,
     past_7_days: List[DailyActivity],
 ) -> str:
@@ -163,7 +163,7 @@ def get_past_week_activities(
 
 
 def slice_and_gen_weekly_activity(
-    user: UserRow, daily_activity: List[DailyActivity], rest_of_week: List[str]
+    user: User, daily_activity: List[DailyActivity], rest_of_week: List[str]
 ) -> List[EnrichedActivity]:
     """
     Slices the weekly activity based on the remaining days of the week and
@@ -197,7 +197,7 @@ def slice_and_gen_weekly_activity(
 
 
 def gen_full_training_week(
-    user: UserRow,
+    user: User,
     daily_activity: List[DailyActivity],
     mileage_rec: MileageRecommendation,
     exe_type: ExeType,

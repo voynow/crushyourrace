@@ -1,9 +1,13 @@
 import datetime
 from enum import StrEnum
 from typing import List, Optional
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from src import utils
+from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_JWT_TOKEN, DEFAULT_USER_ID
 from src.types.training_week import Day, SessionType
+from src.utils import datetime_now_est
 
 
 class RaceDistance(StrEnum):
@@ -32,20 +36,41 @@ class Preferences(BaseModel):
         return data
 
 
-class UserRow(BaseModel):
-    athlete_id: Optional[int] = -1
-    preferences: Optional[Preferences] = Preferences()
+class User(BaseModel):
+    """
+    Representing an application user
+
+    :athlete_id: athlete ID provided by Strava
+    :email: Email provided by the user
+    :preferences: Preferences (e.g. race distance)
+    :is_premium: whether or not the user is premium
+
+    :access_token: Strava access token
+    :refresh_token: Strava refresh token
+    :expires_at: Strava access token expiration date
+
+    :jwt_token: JWT token for generic authentication
+    :user_id: User ID for apple authentication
+
+    :device_token: Device token for apple push notifications
+    :identity_token: Provided by apple auth but largely unused
+
+    :created_at: Date the user was created
+    """
+
+    athlete_id: Optional[int] = DEFAULT_ATHLETE_ID
     email: Optional[str] = None
-    created_at: datetime.datetime = datetime.datetime.now()
-    user_id: Optional[str] = "default"
+    preferences: Optional[Preferences] = Preferences()
+    is_premium: Optional[bool] = False
 
-
-class UserAuthRow(BaseModel):
-    athlete_id: Optional[int] = -1
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
     expires_at: Optional[datetime.datetime] = None
-    jwt_token: Optional[str] = "default"
+
+    jwt_token: Optional[str] = DEFAULT_JWT_TOKEN
+    user_id: Optional[str] = DEFAULT_USER_ID
+
     device_token: Optional[str] = None
-    user_id: Optional[str] = "default"
     identity_token: Optional[str] = None
+
+    created_at: datetime.datetime = datetime_now_est()
