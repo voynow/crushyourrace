@@ -384,15 +384,16 @@ def update_user_premium(athlete_id: int, is_premium: bool) -> None:
     table.update({"is_premium": is_premium}).eq("athlete_id", athlete_id).execute()
 
 
-def update_user_paywall(athlete_id: int, is_paywall: bool) -> None:
+def is_premium(athlete_id: int) -> bool:
     """
-    Update user paywall status
+    Check if the user is premium
 
     :param athlete_id: The ID of the athlete
-    :param is_paywall: The paywall status to update
+    :return: True if the user is premium, False otherwise
     """
     table = client.table("user")
-    table.update({"is_paywall": is_paywall}).eq("athlete_id", athlete_id).execute()
+    response = table.select("is_premium").eq("athlete_id", athlete_id).execute()
+    return response.data[0]["is_premium"]
 
 
 def are_we_in_free_trial_period(user: User) -> bool:
@@ -405,6 +406,16 @@ def are_we_in_free_trial_period(user: User) -> bool:
     start_dt = user.created_at
     end_dt = start_dt + datetime.timedelta(days=FREE_TRIAL_DAYS)
     return end_dt > datetime_now_est()
+
+
+def is_paywall(user: User) -> bool:
+    """
+    If you are in the free trial period or premium, you are not paywalled
+
+    :param user: A User object
+    :return: True if the user is paywalled, False otherwise
+    """
+    return not (are_we_in_free_trial_period(user) or is_premium(user.athlete_id))
 
 
 def get_or_create_user(athlete_id: int, user_id: str) -> User:

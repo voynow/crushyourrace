@@ -249,15 +249,12 @@ async def update_is_premium(
     return {"success": True}
 
 
-@app.post("/paywall/")
-async def update_is_paywall(
-    user: User = Depends(auth_manager.validate_user), paywall: bool = Body(...)
-):
+@app.get("/premium/")
+async def premium(user: User = Depends(auth_manager.validate_user)):
     """
-    Updated is_paywall when free trial is over
+    Check whether or not the user is premium
     """
-    supabase_client.update_user_paywall(user.athlete_id, paywall)
-    return {"success": True}
+    return supabase_client.is_premium(user.athlete_id)
 
 
 @app.get("/free-trial/")

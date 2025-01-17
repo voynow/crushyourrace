@@ -75,6 +75,12 @@ class AuthManager: ObservableObject {
             if let isNewUser = authResponse.is_new_user, isNewUser {
               self.appState.status = .newUser
             } else {
+              // if /free-trial/ is true
+                // .loggedIn
+              // elif /premium/ is true
+                // .loggedIn
+              // else
+                // .showPaywall
               self.appState.status = .loggedIn
             }
           }
