@@ -136,7 +136,7 @@ async def validate_user(
     Dependency that validates the JWT token from the Authorization header
 
     :param credentials: Bearer token credentials
-    :return: UserRow
+    :return: User
     """
     athlete_id = validate_and_refresh_token(credentials.credentials)
     if athlete_id is None:

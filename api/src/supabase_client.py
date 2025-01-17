@@ -7,6 +7,7 @@ from uuid import uuid4
 import orjson
 from dotenv import load_dotenv
 from src import auth_manager, supabase_helpers
+from src.constants import FREE_TRIAL_DAYS
 from src.types.feedback import FeedbackRow
 from src.types.mileage_recommendation import MileageRecommendationRow
 from src.types.training_plan import TrainingPlan, TrainingPlanWeekRow
@@ -17,6 +18,7 @@ from src.types.training_week import (
     TrainingWeek,
 )
 from src.types.user import Preferences, User
+from src.utils import datetime_now_est
 from supabase import Client, create_client
 
 load_dotenv()
@@ -53,7 +55,7 @@ def get_user(athlete_id: int) -> User:
     Get a user by athlete_id
 
     :param athlete_id: int
-    :return: UserRow
+    :return: User
     """
     table = client.table(supabase_helpers.get_user_table_name())
     response = table.select("*").eq("athlete_id", athlete_id).execute()
@@ -369,6 +371,51 @@ def insert_feedback(feedback: FeedbackRow) -> None:
     """
     table = client.table(supabase_helpers.get_feedback_table_name())
     table.insert(feedback.dict()).execute()
+
+
+def update_user_premium(athlete_id: int, is_premium: bool) -> None:
+    """
+    Update user premium status
+
+    :param athlete_id: The ID of the athlete
+    :param is_premium: The premium status to update
+    """
+    table = client.table("user")
+    table.update({"is_premium": is_premium}).eq("athlete_id", athlete_id).execute()
+
+
+def is_premium(athlete_id: int) -> bool:
+    """
+    Check if the user is premium
+
+    :param athlete_id: The ID of the athlete
+    :return: True if the user is premium, False otherwise
+    """
+    table = client.table("user")
+    response = table.select("is_premium").eq("athlete_id", athlete_id).execute()
+    return response.data[0]["is_premium"]
+
+
+def are_we_in_free_trial_period(user: User) -> bool:
+    """
+    Check if we are in the free trial period
+
+    :param user: A User object
+    :return: True if we are in the free trial period, False otherwise
+    """
+    start_dt = user.created_at
+    end_dt = start_dt + datetime.timedelta(days=FREE_TRIAL_DAYS)
+    return end_dt > datetime_now_est()
+
+
+def is_paywall(user: User) -> bool:
+    """
+    If you are in the free trial period or premium, you are not paywalled
+
+    :param user: A User object
+    :return: True if the user is paywalled, False otherwise
+    """
+    return not (are_we_in_free_trial_period(user) or is_premium(user.athlete_id))
 
 
 def get_or_create_user(athlete_id: int, user_id: str) -> User:

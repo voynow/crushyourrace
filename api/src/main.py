@@ -35,6 +35,7 @@ async def middleware(request: Request, call_next: Callable) -> Response:
 
 
 @app.get("/health")
+@app.head("/health", include_in_schema=False)
 async def health():
     logger.info("Healthy ✅")
     return {"status": "healthy"}
@@ -236,3 +237,30 @@ async def update_email(
 async def feedback(feedback: FeedbackRow):
     supabase_client.insert_feedback(feedback=feedback)
     return {"success": True}
+
+
+@app.post("/premium/")
+async def update_is_premium(
+    user: User = Depends(auth_manager.validate_user), premium: bool = Body(...)
+):
+    """
+    Updated is_premium when user subscribes or cancels premium
+    """
+    supabase_client.update_user_premium(user.athlete_id, premium)
+    return {"success": True}
+
+
+@app.get("/premium/")
+async def premium(user: User = Depends(auth_manager.validate_user)):
+    """
+    Check whether or not the user is premium
+    """
+    return supabase_client.is_premium(user.athlete_id)
+
+
+@app.get("/free-trial/")
+async def free_trial(user: User = Depends(auth_manager.validate_user)):
+    """
+    Check whether or not we are in the free trial period
+    """
+    return supabase_client.are_we_in_free_trial_period(user)

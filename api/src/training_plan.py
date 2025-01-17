@@ -77,7 +77,7 @@ def gen_training_plan(
     """
     Generate a training plan for the user given training history
 
-    :param user: UserRow object
+    :param user: User object
     :param weekly_summaries: List of WeekSummary objects
     :param dt: datetime injection, helpful for testing
     :return: TrainingPlan object
@@ -160,7 +160,7 @@ def gen_training_plan_pipeline(
     """
     Generate a training plan for the user given training history
 
-    :param user: UserRow object
+    :param user: User object
     :param weekly_summaries: List of WeekSummary objects
     :param dt: datetime injection, helpful for testing
     :return: TrainingPlan object

@@ -33,6 +33,7 @@
 				mobileApp.swift,
 				Models.swift,
 				NotificationManager.swift,
+				Paywall.swift,
 				PreferencesView.swift,
 				"Preview Content/Preview Assets.xcassets",
 				ProfileSkeletonView.swift,

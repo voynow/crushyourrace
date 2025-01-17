@@ -1,10 +1,8 @@
 import datetime
 from enum import StrEnum
 from typing import List, Optional
-from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, validator
-from src import utils
+from pydantic import BaseModel
 from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_JWT_TOKEN, DEFAULT_USER_ID
 from src.types.training_week import Day, SessionType
 from src.utils import datetime_now_est
