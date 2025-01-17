@@ -239,13 +239,13 @@ async def feedback(feedback: FeedbackRow):
 
 
 @app.post("/premium/")
-async def premium(user: UserRow = Depends(auth_manager.validate_user)):
+async def premium(user: User = Depends(auth_manager.validate_user)):
     supabase_client.update_user_premium(user.athlete_id, True)
     return {"success": True}
 
 
 @app.get("/show-paywall/")
-async def show_paywall(user: UserRow = Depends(auth_manager.validate_user)):
+async def show_paywall(user: User = Depends(auth_manager.validate_user)):
     """
     If free trial is over AND user is not premium, we must show paywall
     """

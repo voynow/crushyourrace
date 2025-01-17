@@ -55,7 +55,7 @@ def get_user(athlete_id: int) -> User:
     Get a user by athlete_id
 
     :param athlete_id: int
-    :return: UserRow
+    :return: User
     """
     table = client.table(supabase_helpers.get_user_table_name())
     response = table.select("*").eq("athlete_id", athlete_id).execute()
@@ -389,7 +389,7 @@ def show_paywall(user: User) -> bool:
     If free trial is not over, return False (don't show paywall)
     Else return False if is_premium, True otherwise
 
-    :param user: A UserRow object
+    :param user: A User object
     :return: True if the user should see the paywall, False otherwise
     """
     start_dt = user.created_at

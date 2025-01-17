@@ -12,7 +12,7 @@ from src import (
     training_week,
     utils,
 )
-from src.constants import INVALID_ATHLETE_ID
+from src.constants import DEFAULT_ATHLETE_ID
 from src.types.training_week import FullTrainingWeek
 from src.types.update_pipeline import ExeType
 from src.types.user import User
@@ -27,7 +27,7 @@ def _update_training_week(
     """
     Single function to handle all training week updates
 
-    :param user: UserRow object
+    :param user: User object
     :param exe_type: ExeType object
     :param dt: datetime injection, helpful for testing
     :return: FullTrainingWeek object
@@ -54,7 +54,7 @@ def update_training_week(
     """
     Full pipeline with update training week & push notification side effects
 
-    :param user: UserRow object
+    :param user: User object
     :param exe_type: ExeType object
     :param dt: datetime injection, helpful for testing
     :return: dict
@@ -74,7 +74,7 @@ def update_training_week_wrapper(
     """
     Wrapper to handle errors in the update pipeline
 
-    :param user: UserRow object
+    :param user: User object
     :param exe_type: ExeType object
     :param dt: datetime injection, helpful for testing
     :return: dict
@@ -102,7 +102,7 @@ def update_all_users() -> dict:
     """
     if utils.datetime_now_est().weekday() != 6:
         for user in supabase_client.list_users():
-            if user.athlete_id == INVALID_ATHLETE_ID:
+            if user.athlete_id == DEFAULT_ATHLETE_ID:
                 continue
             if supabase_client.has_user_updated_today(user.athlete_id):
                 continue
@@ -112,7 +112,7 @@ def update_all_users() -> dict:
     else:
         # all users get a new training week on Sunday night
         for user in supabase_client.list_users():
-            if user.athlete_id == INVALID_ATHLETE_ID:
+            if user.athlete_id == DEFAULT_ATHLETE_ID:
                 continue
             update_training_week_wrapper(
                 user, ExeType.NEW_WEEK, dt=utils.get_last_sunday()

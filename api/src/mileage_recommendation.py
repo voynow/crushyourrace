@@ -55,7 +55,7 @@ def gen_mileage_rec_wrapper(
     Abstraction for mileage rec generation, either pulled from training plan
     generation or generated directly from weekly summaries
 
-    :param user: UserRow object
+    :param user: User object
     :param daily_activity: List of DailyActivity objects
     :param dt: datetime injection, helpful for testing
     :return: MileageRecommendation used to generate training week
