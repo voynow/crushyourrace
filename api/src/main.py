@@ -35,6 +35,7 @@ async def middleware(request: Request, call_next: Callable) -> Response:
 
 
 @app.get("/health")
+@app.head("/health", include_in_schema=False)
 async def health():
     logger.info("Healthy ✅")
     return {"status": "healthy"}

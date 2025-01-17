@@ -563,4 +563,143 @@ class APIManager {
     }.resume()
   }
 
+  func checkPremiumStatus(token: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    guard let request = makeAuthenticatedRequest(endpoint: "premium", token: token) else {
+      completion(
+        .failure(
+          NSError(
+            domain: "", code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+      return
+    }
+
+    session.dataTask(with: request) { [weak self] data, response, error in
+      self?.handleBooleanResponse(
+        data: data, error: error, response: response,
+        startTime: startTime, operationName: "checkPremiumStatus",
+        completion: completion)
+    }.resume()
+  }
+
+  func updatePremiumStatus(
+    token: String, isPremium: Bool, completion: @escaping (Result<Void, Error>) -> Void
+  ) {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    guard
+      let request = makeAuthenticatedRequest(
+        endpoint: "premium", method: "POST",
+        token: token, body: ["premium": isPremium])
+    else {
+      completion(
+        .failure(
+          NSError(
+            domain: "", code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+      return
+    }
+
+    session.dataTask(with: request) { data, response, error in
+      let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+      print("APIManager: updatePremiumStatus took \(timeElapsed) seconds")
+
+      if let error = error {
+        completion(.failure(error))
+        return
+      }
+
+      if let httpResponse = response as? HTTPURLResponse,
+        !(200..<300).contains(httpResponse.statusCode)
+      {
+        completion(
+          .failure(
+            NSError(
+              domain: "", code: httpResponse.statusCode,
+              userInfo: [NSLocalizedDescriptionKey: "Failed to update premium status"])))
+        return
+      }
+
+      completion(.success(()))
+    }.resume()
+  }
+
+  func checkFreeTrialStatus(token: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    guard let request = makeAuthenticatedRequest(endpoint: "free-trial", token: token) else {
+      completion(
+        .failure(
+          NSError(
+            domain: "", code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+      return
+    }
+
+    session.dataTask(with: request) { [weak self] data, response, error in
+      self?.handleBooleanResponse(
+        data: data, error: error, response: response,
+        startTime: startTime, operationName: "checkFreeTrialStatus",
+        completion: completion)
+    }.resume()
+  }
+
+  // Helper functions
+
+  private struct GenericResponse: Decodable {
+    let success: Bool
+  }
+
+  private func makeAuthenticatedRequest(
+    endpoint: String,
+    method: String = "GET",
+    token: String,
+    body: [String: Any]? = nil
+  ) -> URLRequest? {
+    guard let url = URL(string: "\(apiURL)/\(endpoint)/") else { return nil }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = method
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+    if let body = body {
+      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+    }
+
+    return request
+  }
+
+  private func handleBooleanResponse(
+    data: Data?,
+    error: Error?,
+    response: URLResponse?,
+    startTime: Double,
+    operationName: String,
+    completion: @escaping (Result<Bool, Error>) -> Void
+  ) {
+    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+    print("APIManager: \(operationName) took \(timeElapsed) seconds")
+
+    if let error = error {
+      completion(.failure(error))
+      return
+    }
+
+    guard let data = data else {
+      completion(
+        .failure(
+          NSError(
+            domain: "", code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+      return
+    }
+
+    do {
+      let response = try JSONDecoder().decode(GenericResponse.self, from: data)
+      completion(.success(response.success))
+    } catch {
+      print("Decoding error: \(error)")
+      completion(.failure(error))
+    }
+  }
+
 }
