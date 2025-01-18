@@ -8,7 +8,6 @@ struct ContentView: View {
 
   init(appState: AppState) {
     _authManager = StateObject(wrappedValue: AuthManager(appState: appState))
-    print("[ContentView] Initialized")
   }
 
   var body: some View {
@@ -55,9 +54,6 @@ struct ContentView: View {
     }
     .navigationViewStyle(StackNavigationViewStyle())
     .onAppear {
-      print("[ContentView] View appeared, current status: \(appState.status)")
-      print("[ContentView] Auth strategy: \(appState.authStrategy)")
-
       DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
         withAnimation {
           hasCompletedInitialTransition = true
@@ -71,7 +67,6 @@ struct ContentView: View {
     appState.selectedTab = 1
 
     guard let token = appState.jwtToken else {
-      print("No token found")
       return
     }
 

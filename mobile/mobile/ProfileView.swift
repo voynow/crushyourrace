@@ -249,7 +249,10 @@ struct SignOutSection: View {
         Text("Delete Account")
           .font(.system(size: 14, weight: .regular))
           .foregroundColor(ColorTheme.lightGrey)
-          .padding(.vertical, 8)
+          .padding(.vertical, 12)
+          .padding(.horizontal, 18)
+          .background(ColorTheme.darkDarkGrey)
+          .cornerRadius(8)
       }
       .padding(.top, 8)
       .confirmationDialog(

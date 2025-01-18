@@ -564,7 +564,6 @@ class APIManager {
   }
 
   func checkPremiumStatus(token: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-    let startTime = CFAbsoluteTimeGetCurrent()
     guard let request = makeAuthenticatedRequest(endpoint: "premium", token: token) else {
       completion(
         .failure(
@@ -574,11 +573,16 @@ class APIManager {
       return
     }
 
+    let startTime = CFAbsoluteTimeGetCurrent()
     session.dataTask(with: request) { [weak self] data, response, error in
       self?.handleBooleanResponse(
-        data: data, error: error, response: response,
-        startTime: startTime, operationName: "checkPremiumStatus",
-        completion: completion)
+        data: data,
+        error: error,
+        response: response,
+        startTime: startTime,
+        operationName: "checkPremiumStatus",
+        completion: completion
+      )
     }.resume()
   }
 
@@ -624,7 +628,6 @@ class APIManager {
   }
 
   func checkFreeTrialStatus(token: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-    let startTime = CFAbsoluteTimeGetCurrent()
     guard let request = makeAuthenticatedRequest(endpoint: "free-trial", token: token) else {
       completion(
         .failure(
@@ -634,11 +637,16 @@ class APIManager {
       return
     }
 
+    let startTime = CFAbsoluteTimeGetCurrent()
     session.dataTask(with: request) { [weak self] data, response, error in
       self?.handleBooleanResponse(
-        data: data, error: error, response: response,
-        startTime: startTime, operationName: "checkFreeTrialStatus",
-        completion: completion)
+        data: data,
+        error: error,
+        response: response,
+        startTime: startTime,
+        operationName: "checkFreeTrialStatus",
+        completion: completion
+      )
     }.resume()
   }
 
@@ -668,6 +676,11 @@ class APIManager {
     return request
   }
 
+  private struct BooleanResponse: Decodable {
+    let success: Bool
+    let result: Bool
+  }
+
   private func handleBooleanResponse(
     data: Data?,
     error: Error?,
@@ -694,11 +707,23 @@ class APIManager {
     }
 
     do {
-      let response = try JSONDecoder().decode(GenericResponse.self, from: data)
-      completion(.success(response.success))
+      // Try simple boolean first
+      let result = try JSONDecoder().decode(Bool.self, from: data)
+      completion(.success(result))
     } catch {
-      print("Decoding error: \(error)")
-      completion(.failure(error))
+      // If that fails, try dictionary format
+      do {
+        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+          let result = json["is_in_trial"] as? Bool
+        {
+          completion(.success(result))
+        } else {
+          completion(.failure(error))
+        }
+      } catch {
+        print("Final decoding error: \(error)")
+        completion(.failure(error))
+      }
     }
   }
 

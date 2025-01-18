@@ -23,7 +23,18 @@ struct TrainingPlanView: View {
 
       ScrollView {
         VStack(spacing: 16) {
-          if appState.authStrategy == .apple {
+          if appState.showPaywall {
+            VStack(spacing: 16) {
+              PaywallView()
+                .padding(.top, 16)
+            }
+            .transition(
+              .opacity
+                .combined(with: .scale(scale: 0.92))
+                .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.3))
+            )
+            .id("paywall-\(appState.selectedTab)")
+          } else if appState.authStrategy == .apple {
             VStack(spacing: 16) {
               TrainingPlanSkeleton()
                 .overlay(StravaConnectOverlay())
