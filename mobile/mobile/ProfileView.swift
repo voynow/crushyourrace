@@ -202,10 +202,11 @@ struct ProfileInfoCard: View {
 struct SignOutSection: View {
   let action: () -> Void
   @State private var showOnboarding: Bool = false
+  @State private var showDeleteConfirmation: Bool = false
+  @EnvironmentObject var appState: AppState
 
   var body: some View {
     VStack {
-
       HStack(spacing: 12) {
         Button(action: { showOnboarding = true }) {
           HStack {
@@ -240,6 +241,29 @@ struct SignOutSection: View {
           )
           .cornerRadius(8)
         }
+      }
+
+      Button(action: {
+        showDeleteConfirmation = true
+      }) {
+        Text("Delete Account")
+          .font(.system(size: 14, weight: .regular))
+          .foregroundColor(ColorTheme.lightGrey)
+          .padding(.vertical, 8)
+      }
+      .padding(.top, 8)
+      .confirmationDialog(
+        "Delete Account?",
+        isPresented: $showDeleteConfirmation,
+        titleVisibility: .visible
+      ) {
+        Button("Delete", role: .destructive) {
+          action() // Sign out first
+          // TODO: Add actual account deletion logic here
+        }
+        Button("Cancel", role: .cancel) { }
+      } message: {
+        Text("This action cannot be undone. All your data will be permanently deleted.")
       }
     }
     .fullScreenCover(isPresented: $showOnboarding) {
