@@ -16,6 +16,7 @@ struct PaywallView: View {
         Text("Your Trial Has Ended")
           .font(.system(size: 20, weight: .bold))
           .foregroundColor(ColorTheme.white)
+          .padding(.top, 10)
 
         Text(
           "It costs us money to keep the lights on. Upgrade to Premium to continue training with us."
