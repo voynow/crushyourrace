@@ -40,7 +40,7 @@ class AuthManager: ObservableObject {
   private func handleAuthorizationCode(_ code: String) {
     appState.status = .loading
 
-    Task {
+    Task { @MainActor in
       do {
         guard let url = URL(string: "\(APIManager.shared.apiURL)/authenticate/") else {
           throw NSError(
@@ -60,8 +60,7 @@ class AuthManager: ObservableObject {
           throw NSError(
             domain: "AuthError",
             code: httpResponse.statusCode,
-            userInfo: [NSLocalizedDescriptionKey: "Authentication failed"]
-          )
+            userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
         }
 
         let authResponse = try JSONDecoder().decode(SignupResponse.self, from: data)
@@ -69,33 +68,24 @@ class AuthManager: ObservableObject {
         if authResponse.success {
           UserDefaults.standard.set(authResponse.jwt_token, forKey: "jwt_token")
           UserDefaults.standard.set("strava", forKey: "auth_strategy")
-          DispatchQueue.main.async {
-            self.appState.jwtToken = authResponse.jwt_token
-            self.appState.authStrategy = .strava
-            if let isNewUser = authResponse.is_new_user, isNewUser {
-              self.appState.status = .newUser
-            } else {
-              // if /free-trial/ is true
-                // .loggedIn
-              // elif /premium/ is true
-                // .loggedIn
-              // else
-                // .showPaywall
-              self.appState.status = .loggedIn
-            }
+
+          self.appState.jwtToken = authResponse.jwt_token
+          self.appState.authStrategy = .strava
+
+          if let isNewUser = authResponse.is_new_user, isNewUser {
+            self.appState.status = .newUser
+          } else {
+            self.appState.status = .loggedIn
           }
         } else {
           throw NSError(
             domain: "AuthError",
             code: 0,
-            userInfo: [NSLocalizedDescriptionKey: "Authentication failed"]
-          )
+            userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
         }
       } catch {
         print("Error during authentication: \(error.localizedDescription)")
-        DispatchQueue.main.async {
-          self.appState.status = .loggedOut
-        }
+        self.appState.status = .loggedOut
       }
     }
   }

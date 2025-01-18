@@ -6,7 +6,6 @@ struct PaywallView: View {
   @State private var isLoading = false
   @State private var showError = false
   @State private var errorMessage = ""
-  @State private var showSkipConfirmation = false
 
   var body: some View {
     ZStack {
@@ -14,22 +13,10 @@ struct PaywallView: View {
 
       VStack(spacing: 40) {
 
-        VStack(spacing: 10) {
-          HStack {
-            Text("Crush")
-              .font(.system(size: 36, weight: .black))
-              .foregroundColor(ColorTheme.primaryLight)
-
-            Text("Your Race")
-              .font(.system(size: 36, weight: .black))
-              .foregroundColor(ColorTheme.primary)
-          }
-          .padding(.top, 40)
-
-          Text("Your Free Trial Has Ended")
-            .font(.system(size: 20, weight: .bold))
-            .foregroundColor(ColorTheme.white)
-        }
+        Text("Your Trial Has Ended")
+          .font(.system(size: 20, weight: .bold))
+          .foregroundColor(ColorTheme.white)
+          .padding(.top, 10)
 
         Text(
           "It costs us money to keep the lights on. Upgrade to Premium to continue training with us."
@@ -111,58 +98,30 @@ struct PaywallView: View {
 
         Spacer()
 
-        HStack(spacing: 16) {
-          Button(action: { showSkipConfirmation = true }) {
-            HStack {
-              Image(systemName: "xmark.circle")
-              Text("Skip for Now")
+        Button(action: handleSubscribe) {
+          HStack {
+            if isLoading {
+              ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .scaleEffect(0.8)
             }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(ColorTheme.lightGrey)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(ColorTheme.darkDarkGrey)
-            .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                .stroke(ColorTheme.midDarkGrey, lineWidth: 1)
-            )
-            .cornerRadius(8)
+            Image(systemName: "star.fill")
+            Text(isLoading ? "Processing..." : "Get Premium")
           }
-
-          Button(action: handleSubscribe) {
-            HStack {
-              if isLoading {
-                ProgressView()
-                  .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                  .scaleEffect(0.8)
-              }
-              Image(systemName: "star.fill")
-              Text(isLoading ? "Processing..." : "Get Premium")
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(ColorTheme.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(ColorTheme.primary)
-            .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                .stroke(ColorTheme.primary.opacity(0.2), lineWidth: 1)
-            )
-            .cornerRadius(8)
-          }
-          .disabled(isLoading)
+          .font(.system(size: 16, weight: .medium))
+          .foregroundColor(ColorTheme.white)
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 12)
+          .background(ColorTheme.primary)
+          .overlay(
+            RoundedRectangle(cornerRadius: 8)
+              .stroke(ColorTheme.primary.opacity(0.2), lineWidth: 1)
+          )
+          .cornerRadius(8)
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 32)
+        .disabled(isLoading)
+        .padding(.horizontal, 36)
       }
-      .overlay(
-        Group {
-          if showSkipConfirmation {
-            skipConfirmationOverlay
-              .transition(.opacity)
-          }
-        }
-      )
     }
   }
 
@@ -181,9 +140,8 @@ struct PaywallView: View {
           .font(.system(size: 15))
           .foregroundColor(ColorTheme.lightGrey)
       }
-
-      Spacer()
     }
+    .frame(maxWidth: 300, alignment: .leading)
   }
 
   private func handleSubscribe() {
@@ -209,101 +167,12 @@ struct PaywallView: View {
     // }
   }
 
-  private func handleSkip() {
-    guard let token = appState.jwtToken else {
-      showError(message: "Authentication error. Please try again.")
-      return
-    }
-
-    // APIManager.shared.updatePaywallStatus(token: token, paywall: true) { result in
-    //   DispatchQueue.main.async {
-    //     switch result {
-    //     case .success:
-    //       dismiss()
-    //     case .failure(let error):
-    //       showError(message: error.localizedDescription)
-    //     }
-    //   }
-    // }
-  }
-
   private func showError(message: String) {
     errorMessage = message
     showError = true
     isLoading = false
   }
 
-  private var skipConfirmationOverlay: some View {
-    ZStack {
-      Color.black.opacity(0.8)
-        .edgesIgnoringSafeArea(.all)
-        .transition(.opacity)
-
-      VStack(spacing: 24) {
-        VStack(spacing: 16) {
-          Image(systemName: "exclamationmark.circle.fill")
-            .font(.system(size: 36))
-            .foregroundColor(ColorTheme.primary)
-
-          Text("Are you sure?")
-            .font(.system(size: 24, weight: .bold))
-            .foregroundColor(ColorTheme.white)
-
-          Text(
-            "Your free trial has ended. Your training plans will no longer update automatically."
-          )
-          .font(.system(size: 16))
-          .foregroundColor(ColorTheme.lightGrey)
-          .multilineTextAlignment(.center)
-          .padding(.horizontal, 24)
-        }
-
-        HStack(spacing: 12) {
-          Button(action: { showSkipConfirmation = false }) {
-            HStack {
-              Image(systemName: "arrow.left")
-              Text("Go Back")
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(ColorTheme.primaryDark)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(ColorTheme.darkDarkGrey)
-            .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                .stroke(ColorTheme.primaryDark, lineWidth: 1)
-            )
-            .cornerRadius(8)
-          }
-
-          Button(action: handleSkip) {
-            HStack {
-              Text("Yes, Skip")
-              Image(systemName: "arrow.right")
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(ColorTheme.lightGrey)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(ColorTheme.darkDarkGrey)
-            .overlay(
-              RoundedRectangle(cornerRadius: 8)
-                .stroke(ColorTheme.midDarkGrey, lineWidth: 1)
-            )
-            .cornerRadius(8)
-          }
-        }
-        .padding(.horizontal, 24)
-      }
-      .padding(.vertical, 24)
-      .padding(.horizontal, 16)
-      .background(ColorTheme.darkGrey.opacity(0.95))
-      .cornerRadius(16)
-      .shadow(color: Color.black.opacity(0.2), radius: 20)
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .padding(32)
-    }
-  }
 }
 
 #Preview("Paywall") {

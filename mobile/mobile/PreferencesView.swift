@@ -74,6 +74,7 @@ struct PreferencesContent: View {
   var onUpdate: () -> Void
   @State private var activeSaveSection: String?
   @State private var showRaceSetupSheet: Bool = false
+  @State private var showPaywall: Bool = false
 
   var body: some View {
     VStack(alignment: .leading, spacing: 24) {
@@ -84,7 +85,7 @@ struct PreferencesContent: View {
       ) {
         if let raceDistance = preferences.raceDistance, let raceDate = preferences.raceDate {
           VStack(spacing: 16) {
-            Button(action: { showRaceSetupSheet = true }) {
+            Button(action: handleRaceSetup) {
               VStack(spacing: 16) {
                 preferenceRowView(
                   title: "Race Distance",
@@ -105,7 +106,7 @@ struct PreferencesContent: View {
             }
           }
         } else {
-          Button(action: { showRaceSetupSheet = true }) {
+          Button(action: handleRaceSetup) {
             HStack {
               Image(systemName: "plus.circle.fill")
               Text("Set up your race")
@@ -155,6 +156,9 @@ struct PreferencesContent: View {
           appState.setGeneratingPlanState()
         }
       )
+    }
+    .sheet(isPresented: $showPaywall) {
+      PaywallView()
     }
   }
 
@@ -264,6 +268,14 @@ struct PreferencesContent: View {
     preferences.raceDate = nil
     onUpdate()
     showSaveBanner(for: "race")
+  }
+
+  private func handleRaceSetup() {
+    if appState.showPaywall {
+      showPaywall = true
+    } else {
+      showRaceSetupSheet = true
+    }
   }
 }
 

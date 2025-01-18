@@ -23,8 +23,9 @@ struct mobileApp: App {
             {
               appState.authStrategy = strategy
             }
+        
+            appState.setShowPaywall()
           } else {
-            print("[mobileApp] No authentication found")
             appState.status = .loggedOut
           }
         }

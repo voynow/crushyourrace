@@ -11,14 +11,10 @@ struct DashboardView: View {
   @State private var trainingPlan: TrainingPlan?
 
   var body: some View {
-    let _ = print("[DashboardView] Rendering, auth strategy: \(appState.authStrategy)")
-
     ZStack {
-      let _ = print("[DashboardView] Inside ZStack")
       ColorTheme.black.edgesIgnoringSafeArea(.all)
 
       TabView(selection: $appState.selectedTab) {
-        let _ = print("[DashboardView] Inside TabView, selectedTab: \(appState.selectedTab)")
         VStack {
           DashboardNavbar(
             onLogout: { appState.clearAuthState() }, showProfile: $appState.showProfile
@@ -27,8 +23,17 @@ struct DashboardView: View {
           .zIndex(1)
 
           ScrollView {
-            if appState.authStrategy == .apple {
-              let _ = print("[DashboardView] Rendering Apple auth content")
+            if appState.showPaywall {
+              VStack(spacing: 16) {
+                PaywallView()
+                  .padding(.top, 16)
+              }
+              .transition(
+                .opacity
+                  .combined(with: .scale(scale: 0.95))
+                  .animation(.spring(response: 0.4, dampingFraction: 0.8))
+              )
+            } else if appState.authStrategy == .apple {
               VStack(spacing: 16) {
                 DashboardSkeletonView()
                   .overlay(StravaConnectOverlay())

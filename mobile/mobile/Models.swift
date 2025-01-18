@@ -364,3 +364,9 @@ struct TrainingPlan: Codable {
     case trainingPlanWeeks = "training_plan_weeks"
   }
 }
+
+enum PremiumStatus {
+  case freeTrial
+  case premium
+  case needsPaywall
+}
