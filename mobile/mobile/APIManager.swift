@@ -12,7 +12,7 @@ class APIManager {
   }
 
   internal let session: URLSession
-  internal let apiURL = "http://trackflow-alb-499532887.us-east-1.elb.amazonaws.com"
+  internal let apiURL = "https://api.crushyourrace.com"
 
   private struct ProfileCache {
     static var data: ProfileData?

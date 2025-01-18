@@ -3,6 +3,7 @@ import SwiftUI
 struct StravaConnectOverlay: View {
   @EnvironmentObject var appState: AppState
   @State private var showOnboarding: Bool = false
+  @State private var showDeleteConfirmation: Bool = false
 
   var body: some View {
     Color.clear
@@ -76,6 +77,29 @@ struct StravaConnectOverlay: View {
               }
             }
             .padding(.horizontal, 24)
+
+            Button(action: {
+              showDeleteConfirmation = true
+            }) {
+              Text("Delete Account")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(ColorTheme.lightGrey)
+                .padding(.vertical, 8)
+            }
+            .padding(.top, 8)
+            .confirmationDialog(
+              "Delete Account?",
+              isPresented: $showDeleteConfirmation,
+              titleVisibility: .visible
+            ) {
+              Button("Delete", role: .destructive) {
+                appState.clearAuthState()  // Sign out first
+                // TODO: Add actual account deletion logic here
+              }
+              Button("Cancel", role: .cancel) {}
+            } message: {
+              Text("This action cannot be undone. All your data will be permanently deleted.")
+            }
           }
           .padding(.vertical, 24)
           .padding(.horizontal, 16)
@@ -97,8 +121,5 @@ struct StravaConnectOverlay: View {
 }
 
 #Preview {
-  ZStack {
-    Color.black
-    StravaConnectOverlay()
-  }
+  StravaConnectOverlay()
 }

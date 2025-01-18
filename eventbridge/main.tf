@@ -1,5 +1,5 @@
-resource "aws_cloudwatch_event_connection" "trackflow_api_connection" {
-  name               = "trackflow-api-connection"
+resource "aws_cloudwatch_event_connection" "crushyourrace_api_connection" {
+  name               = "crushyourrace-api-connection"
   authorization_type = "API_KEY"
 
   auth_parameters {
@@ -10,22 +10,22 @@ resource "aws_cloudwatch_event_connection" "trackflow_api_connection" {
   }
 }
 
-resource "aws_cloudwatch_event_api_destination" "trackflow_daily_destination" {
-  name                             = "trackflow-daily-destination"
-  connection_arn                   = aws_cloudwatch_event_connection.trackflow_api_connection.arn
+resource "aws_cloudwatch_event_api_destination" "crushyourrace_daily_destination" {
+  name                             = "crushyourrace-daily-destination"
+  connection_arn                   = aws_cloudwatch_event_connection.crushyourrace_api_connection.arn
   http_method                      = "POST"
   invocation_endpoint             = "${var.api_base_url}/update-all-users/"
   invocation_rate_limit_per_second = 1
 }
 
-resource "aws_cloudwatch_event_rule" "trackflow_daily" {
-  name                = "trackflow-daily"
-  description         = "Trigger daily TrackFlow updates at 8:30 PM EST"
+resource "aws_cloudwatch_event_rule" "crushyourrace_daily" {
+  name                = "crushyourrace-daily"
+  description         = "Trigger daily crushyourrace updates at 8:30 PM EST"
   schedule_expression = "cron(30 1 * * ? *)" # 8:30 PM EST
 }
 
 resource "aws_iam_role" "eventbridge_api_destination" {
-  name = "trackflow-daily-eventbridge-role"
+  name = "crushyourrace-daily-eventbridge-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -42,7 +42,7 @@ resource "aws_iam_role" "eventbridge_api_destination" {
 }
 
 resource "aws_iam_role_policy" "eventbridge_api_destination" {
-  name = "trackflow-daily-eventbridge-policy"
+  name = "crushyourrace-daily-eventbridge-policy"
   role = aws_iam_role.eventbridge_api_destination.id
 
   policy = jsonencode({
@@ -54,17 +54,17 @@ resource "aws_iam_role_policy" "eventbridge_api_destination" {
           "events:InvokeApiDestination"
         ]
         Resource = [
-          aws_cloudwatch_event_api_destination.trackflow_daily_destination.arn
+          aws_cloudwatch_event_api_destination.crushyourrace_daily_destination.arn
         ]
       }
     ]
   })
 }
 
-resource "aws_cloudwatch_event_target" "trackflow_daily_target" {
-  rule      = aws_cloudwatch_event_rule.trackflow_daily.name
-  target_id = "TrackflowDailyTarget"
-  arn       = aws_cloudwatch_event_api_destination.trackflow_daily_destination.arn
+resource "aws_cloudwatch_event_target" "crushyourrace_daily_target" {
+  rule      = aws_cloudwatch_event_rule.crushyourrace_daily.name
+  target_id = "crushyourraceDailyTarget"
+  arn       = aws_cloudwatch_event_api_destination.crushyourrace_daily_destination.arn
   role_arn  = aws_iam_role.eventbridge_api_destination.arn
 
   retry_policy {
