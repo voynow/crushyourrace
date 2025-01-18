@@ -380,7 +380,7 @@ def update_user_premium(athlete_id: int, is_premium: bool) -> None:
     :param athlete_id: The ID of the athlete
     :param is_premium: The premium status to update
     """
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
     table.update({"is_premium": is_premium}).eq("athlete_id", athlete_id).execute()
 
 
@@ -391,7 +391,7 @@ def is_premium(athlete_id: int) -> bool:
     :param athlete_id: The ID of the athlete
     :return: True if the user is premium, False otherwise
     """
-    table = client.table("user")
+    table = client.table(supabase_helpers.get_user_table_name())
     response = table.select("is_premium").eq("athlete_id", athlete_id).execute()
     return response.data[0]["is_premium"]
 

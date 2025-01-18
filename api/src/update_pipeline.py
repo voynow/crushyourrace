@@ -1,6 +1,7 @@
 import datetime
 import logging
 import traceback
+from typing import Optional
 
 from src import (
     activities,
@@ -48,9 +49,7 @@ def _update_training_week(
     )
 
 
-def update_training_week(
-    user: User, exe_type: ExeType, dt: datetime.datetime
-) -> dict:
+def update_training_week(user: User, exe_type: ExeType, dt: datetime.datetime) -> dict:
     """
     Full pipeline with update training week & push notification side effects
 
@@ -93,22 +92,24 @@ def update_training_week_wrapper(
         return {"success": False, "error": error_message}
 
 
-def update_all_users() -> dict:
+def update_all_users(dt: Optional[datetime.datetime] = None) -> dict:
     """
     Evenings excluding Sunday: Send update to users who have not yet triggered an update today
     Sunday evening: Send new training week to all active users
 
     :return: dict
     """
-    if utils.datetime_now_est().weekday() != 6:
+
+    if dt is None:
+        dt = utils.datetime_now_est()
+
+    if dt.weekday() != 6:
         for user in supabase_client.list_users():
             if user.athlete_id == DEFAULT_ATHLETE_ID:
                 continue
             if supabase_client.has_user_updated_today(user.athlete_id):
                 continue
-            update_training_week_wrapper(
-                user, ExeType.MID_WEEK, dt=utils.datetime_now_est()
-            )
+            update_training_week_wrapper(user, ExeType.MID_WEEK, dt=dt)
     else:
         # all users get a new training week on Sunday night
         for user in supabase_client.list_users():
