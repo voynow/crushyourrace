@@ -6,6 +6,7 @@ struct PaywallView: View {
   @State private var isLoading = false
   @State private var showError = false
   @State private var errorMessage = ""
+  @StateObject private var storeKit = StoreKitManager()
 
   var body: some View {
     ZStack {
@@ -123,6 +124,11 @@ struct PaywallView: View {
         .padding(.horizontal, 36)
       }
     }
+    .alert("Error", isPresented: $showError) {
+      Button("OK", role: .cancel) {}
+    } message: {
+      Text(errorMessage)
+    }
   }
 
   private func premiumBenefit(icon: String, title: String, subtitle: String) -> some View {
@@ -147,24 +153,19 @@ struct PaywallView: View {
   private func handleSubscribe() {
     isLoading = true
 
-    guard let token = appState.jwtToken else {
-      showError(message: "Authentication error. Please try again.")
-      return
+    Task {
+      do {
+        try await storeKit.purchase()
+        await MainActor.run {
+          isLoading = false
+          dismiss()
+        }
+      } catch {
+        await MainActor.run {
+          showError(message: error.localizedDescription)
+        }
+      }
     }
-
-    // TODO: Implement RevenueCat or StoreKit subscription logic here
-    // APIManager.shared.updatePremiumStatus(token: token) { result in
-    //   DispatchQueue.main.async {
-    //     isLoading = false
-
-    //     switch result {
-    //     case .success:
-    //       dismiss()
-    //     case .failure(let error):
-    //       showError(message: error.localizedDescription)
-    //     }
-    //   }
-    // }
   }
 
   private func showError(message: String) {
