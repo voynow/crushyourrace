@@ -6,8 +6,13 @@
 	objectVersion = 70;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		80B0A20F2D3D7F0A00A5791B /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80B0A20E2D3D7F0A00A5791B /* StoreKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		809F8EBF2CCBE0BE00D41481 /* mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		80B0A20E2D3D7F0A00A5791B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -21,6 +26,7 @@
 				AuthManager.swift,
 				ColorTheme.swift,
 				ContentView.swift,
+				"Crush Your Race.storekit",
 				DashboardNavbar.swift,
 				DashboardSkeletonView.swift,
 				DashboardView.swift,
@@ -39,6 +45,7 @@
 				ProfileSkeletonView.swift,
 				ProfileView.swift,
 				RaceSetupSheet.swift,
+				StoreKitManager.swift,
 				StravaConnectOverlay.swift,
 				TrainingPlanSkeleton.swift,
 				TrainingPlanView.swift,
@@ -58,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80B0A20F2D3D7F0A00A5791B /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,7 +77,16 @@
 			children = (
 				807A711A2CCB2DA30032BA17 /* mobile */,
 				809F8EBF2CCBE0BE00D41481 /* mobile.app */,
+				80B0A20D2D3D7F0A00A5791B /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		80B0A20D2D3D7F0A00A5791B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				80B0A20E2D3D7F0A00A5791B /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
