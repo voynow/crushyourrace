@@ -109,6 +109,29 @@ async def get_profile(user: User = Depends(auth_manager.validate_user)) -> dict:
     }
 
 
+@app.get("/v2/profile/")
+async def get_profile_v2(user: User = Depends(auth_manager.validate_user)) -> dict:
+    """
+    Retrieve user profile information including Strava details
+
+    :param user: The authenticated user
+    :return: Dictionary containing profile information
+    """
+    athlete = auth_manager.get_strava_client(user.athlete_id).get_athlete()
+    return {
+        "success": True,
+        "profile": {
+            "firstname": athlete.firstname,
+            "lastname": athlete.lastname,
+            "profile": athlete.profile,
+            "email": user.email,
+            "preferences": user.preferences.json(),
+            "member_since": user.created_at.date(),
+            "is_premium": user.is_premium,
+        },
+    }
+
+
 @app.get("/weekly-summaries/")
 async def get_weekly_summaries(
     user: User = Depends(auth_manager.validate_user),
