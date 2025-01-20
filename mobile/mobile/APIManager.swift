@@ -590,18 +590,20 @@ class APIManager {
     token: String, isPremium: Bool, completion: @escaping (Result<Void, Error>) -> Void
   ) {
     let startTime = CFAbsoluteTimeGetCurrent()
-    guard
-      let request = makeAuthenticatedRequest(
-        endpoint: "premium", method: "POST",
-        token: token, body: ["premium": isPremium])
-    else {
+    guard let url = URL(string: "\(apiURL)/premium/") else {
       completion(
-        .failure(
-          NSError(
-            domain: "", code: 0,
-            userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+        .failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
+      )
       return
     }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let encoder = JSONEncoder()
+    request.httpBody = try? encoder.encode(isPremium)
 
     session.dataTask(with: request) { data, response, error in
       let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime

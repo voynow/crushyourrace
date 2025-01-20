@@ -75,7 +75,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Crush Your Race.storekit">
+         identifier = "../../mobile/Crush Your Race.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
