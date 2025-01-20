@@ -14,19 +14,21 @@ struct PaywallView: View {
 
       VStack(spacing: 40) {
 
-        Text("Your Trial Has Ended")
-          .font(.system(size: 20, weight: .bold))
-          .foregroundColor(ColorTheme.white)
-          .padding(.top, 10)
+        VStack(spacing: 20) {
+          Text("Your Trial Has Ended")
+            .font(.system(size: 20, weight: .bold))
+            .foregroundColor(ColorTheme.white)
+            .padding(.top, 10)
 
-        Text(
-          "It costs us money to keep the lights on. Upgrade to Premium to continue training with us."
-        )
-        .font(.system(size: 14))
-        .foregroundColor(ColorTheme.lightGrey)
-        .multilineTextAlignment(.center)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, 24)
+          Text(
+            "It costs us money to keep the lights on. Upgrade to Premium to continue training with us."
+          )
+          .font(.system(size: 14))
+          .foregroundColor(ColorTheme.lightGrey)
+          .multilineTextAlignment(.center)
+          .fixedSize(horizontal: false, vertical: true)
+          .padding(.horizontal, 24)
+        }
 
         VStack(spacing: 20) {
           Text("Launch Price!")

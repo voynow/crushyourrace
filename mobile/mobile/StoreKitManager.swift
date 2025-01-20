@@ -23,17 +23,26 @@ final class StoreKitManager: ObservableObject {
 
   func loadProducts() async {
     do {
-      print("Attempting to load products with ID: \(Self.premiumProductId)")
+      print("Starting product load...")
+      let storeKitConfig = try StoreKit.Configuration.current
+      print("StoreKit configuration loaded: \(storeKitConfig)")
+
       subscriptions = try await Product.products(for: [Self.premiumProductId])
-      print("Successfully loaded \(subscriptions.count) products")
-      if let product = subscriptions.first {
-        print("Product details - ID: \(product.id), Price: \(product.price)")
+      print("Product load completed. Found \(subscriptions.count) products")
+
+      for product in subscriptions {
+        print("Product details:")
+        print("- ID: \(product.id)")
+        print("- Type: \(product.type)")
+        print("- Price: \(product.price)")
+        print("- Subscription period: \(product.subscription?.subscriptionPeriod.unit ?? .month)")
       }
     } catch {
-      print("Failed to load products - Error: \(error)")
+      print("Product load failed with error: \(error)")
       if let skError = error as? SKError {
-        print(
-          "SKError code: \(skError.code.rawValue), description: \(skError.localizedDescription)")
+        print("SKError code: \(skError.code.rawValue)")
+        print("SKError description: \(skError.localizedDescription)")
+        print("SKError debug description: \(skError.errorDescription)")
       }
     }
   }

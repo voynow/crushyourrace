@@ -13,7 +13,6 @@
 /* Begin PBXFileReference section */
 		809F8EBF2CCBE0BE00D41481 /* mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		80B0A20E2D3D7F0A00A5791B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		80B0A2102D3D828800A5791B /* Crush Your Race.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Crush Your Race.storekit"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -27,6 +26,7 @@
 				AuthManager.swift,
 				ColorTheme.swift,
 				ContentView.swift,
+				"Crush Your Race.storekit",
 				DashboardNavbar.swift,
 				DashboardSkeletonView.swift,
 				DashboardView.swift,
@@ -75,7 +75,6 @@
 		80777D082C973F01007565FC = {
 			isa = PBXGroup;
 			children = (
-				80B0A2102D3D828800A5791B /* Crush Your Race.storekit */,
 				807A711A2CCB2DA30032BA17 /* mobile */,
 				809F8EBF2CCBE0BE00D41481 /* mobile.app */,
 				80B0A20D2D3D7F0A00A5791B /* Frameworks */,

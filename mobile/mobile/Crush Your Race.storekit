@@ -9,7 +9,7 @@
       }
     ]
   },
-  "identifier" : "9EDAB340",
+  "identifier" : "33288C21",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -20,7 +20,7 @@
     "_applicationInternalID" : "6737172627",
     "_developerTeamID" : "HUAAF6KX6P",
     "_failTransactionsEnabled" : false,
-    "_lastSynchronizedDate" : 759005836.12445903,
+    "_lastSynchronizedDate" : 759073513.59069896,
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -70,7 +70,43 @@
     ]
   },
   "subscriptionGroups" : [
+    {
+      "id" : "9183DA2D",
+      "localizations" : [
 
+      ],
+      "name" : "Crush Your Race Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "7F6298A6",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "crushyourraceprosubscription",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Crush Your Race Pro",
+          "subscriptionGroupID" : "9183DA2D",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
   ],
   "version" : {
     "major" : 4,
