@@ -108,14 +108,14 @@ struct TrainingPlanView: View {
           fetchTrainingPlanData()
         }
         if profileData == nil {
-          fetchProfileData()
+          fetchProfileDataHelper()
         }
       }
     }
     .refreshable {
       if appState.authStrategy != .apple {
         fetchTrainingPlanData()
-        fetchProfileData()
+        fetchProfileDataHelper()
       }
     }
     .navigationBarHidden(true)
@@ -160,7 +160,7 @@ struct TrainingPlanView: View {
     }
   }
 
-  private func fetchProfileData() {
+  private func fetchProfileDataHelper() {
     if appState.authStrategy == .apple {
       isLoadingProfile = false
       return

@@ -37,9 +37,10 @@ struct ProfileView: View {
               .foregroundColor(ColorTheme.lightGrey)
               .font(.system(size: 20, weight: .semibold))
           }
+          .padding(.trailing, 12)
         }
         .padding(.horizontal)
-        .padding(.top, 4)
+        .padding(.top, 5)
         .background(ColorTheme.black)
         .zIndex(1)
 
@@ -77,7 +78,7 @@ struct ProfileView: View {
       }
     }
     .onAppear {
-      fetchProfileData()
+      fetchProfileDataHelper()
     }
   }
 
@@ -128,7 +129,7 @@ struct ProfileView: View {
     )
   }
 
-  private func fetchProfileData() {
+  private func fetchProfileDataHelper() {
     guard let token = appState.jwtToken else {
       isLoading = false
       return
