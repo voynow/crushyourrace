@@ -75,7 +75,6 @@ class AppState: ObservableObject {
     Task {
       do {
         let status = try await PremiumManager.checkStatus(token: token)
-        print("setShowPaywall checkStatus=\(status)")
         DispatchQueue.main.async {
           self.showPaywall = status == .needsPaywall
         }

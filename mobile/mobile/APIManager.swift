@@ -37,7 +37,7 @@ class APIManager {
     }
 
     let startTime = CFAbsoluteTimeGetCurrent()
-    guard let url = URL(string: "\(apiURL)/profile/") else {
+    guard let url = URL(string: "\(apiURL)/v2/profile/") else {
       completion(
         .failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]))
       )

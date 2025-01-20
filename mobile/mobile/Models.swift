@@ -7,9 +7,13 @@ struct ProfileData: Codable {
   var email: String?
   var profile: String
   var preferences: String?
+  var isPremium: Bool
+  var memberSince: String
 
   enum CodingKeys: String, CodingKey {
     case firstname, lastname, email, profile, preferences
+    case isPremium = "is_premium"
+    case memberSince = "member_since"
   }
 }
 
