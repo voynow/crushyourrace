@@ -42,6 +42,7 @@
 				PreferencesView.swift,
 				PremiumManager.swift,
 				"Preview Content/Preview Assets.xcassets",
+				ProfileManagementOverlay.swift,
 				ProfileSkeletonView.swift,
 				ProfileView.swift,
 				RaceSetupSheet.swift,
