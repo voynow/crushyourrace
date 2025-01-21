@@ -72,6 +72,18 @@ final class StoreKitManager: ObservableObject {
       for await result in Transaction.updates {
         do {
           let transaction = try await self.checkVerified(result)
+
+          if transaction.revocationDate != nil {
+            if let token = UserDefaults.standard.string(forKey: "jwt_token") {
+              await APIManager.shared.updatePremiumStatus(token: token, isPremium: false) {
+                result in
+                if case .failure(let error) = result {
+                  print("Failed to update subscription status: \(error)")
+                }
+              }
+            }
+          }
+
           await transaction.finish()
         } catch {
           print("Transaction verification failed: \(error)")
@@ -88,6 +100,8 @@ enum StoreError: LocalizedError {
   case pending
   case unknown
   case failedToUpdateBackend
+  case failedUnsubscribe
+  case noActiveSubscription
 
   var errorDescription: String? {
     switch self {
@@ -101,6 +115,10 @@ enum StoreError: LocalizedError {
       return "Purchase is pending"
     case .failedToUpdateBackend:
       return "Failed to activate subscription"
+    case .failedUnsubscribe:
+      return "Failed to unsubscribe"
+    case .noActiveSubscription:
+      return "No active subscription found"
     case .unknown:
       return "An unknown error occurred"
     }
