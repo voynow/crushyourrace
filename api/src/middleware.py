@@ -1,11 +1,12 @@
 import json
 import logging
+import time
 import traceback
 import uuid
 from datetime import datetime, timezone
 from typing import Callable
 
-from fastapi import HTTPException, Request, Response
+from fastapi import Request, Response
 from src.auth_manager import decode_jwt
 from src.email_manager import send_alert_email
 
@@ -41,14 +42,15 @@ async def get_response_body(response: Response) -> bytes:
     return body
 
 
-async def log_request(request_id: str, request: Request, user_info: str) -> None:
+async def log_request(request_id: str, request: Request, user_info: str) -> float:
     """
     Log incoming request details with request body while preserving it for endpoint use
+    and return the request start time for profiling.
 
     :param request_id: unique request identifier
     :param request: FastAPI Request object
     :param user_info: user's athlete_id or "unauthenticated"
-    :return: None
+    :return: start time of request processing
     """
     # Create a copy of the body
     body = await request.body()
@@ -76,19 +78,26 @@ async def log_request(request_id: str, request: Request, user_info: str) -> None
     }
     logger.info(f"REQUEST: {log_data}")
 
+    # Return the start time for profiling
+    return time.monotonic()
 
-def log_response(request_id: str, response: Response, body: bytes) -> None:
+
+def log_response(
+    request_id: str, response: Response, body: bytes, duration: float
+) -> None:
     """
-    Log response details
+    Log response details with profiling duration.
 
     :param request_id: unique request identifier
     :param response: FastAPI Response object
     :param body: response body as bytes
+    :param duration: time taken to process the request in seconds
     """
     log_data = {
         "request_id": request_id,
         "status_code": response.status_code,
         "body": body.decode(),
+        "duration": f"{round(duration, 2)}s",
     }
     logger.info(f"RESPONSE: {log_data}")
 
@@ -122,7 +131,7 @@ def create_error_log(
 
 async def log_and_handle_errors(request: Request, call_next: Callable) -> Response:
     """
-    Middleware to log requests/responses and handle errors.
+    Middleware to log requests/responses, handle errors, and add profiling.
 
     :param request: incoming FastAPI Request object
     :param call_next: next middleware function
@@ -133,12 +142,13 @@ async def log_and_handle_errors(request: Request, call_next: Callable) -> Respon
     endpoint = f"{request.method} {request.url.path}"
 
     try:
-        await log_request(request_id, request, user_info)
+        start_time = await log_request(request_id, request, user_info)
 
         response = await call_next(request)
         response_body = await get_response_body(response)
 
-        log_response(request_id, response, response_body)
+        duration = time.monotonic() - start_time
+        log_response(request_id, response, response_body, duration)
 
         return Response(
             content=response_body,
