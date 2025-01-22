@@ -30,8 +30,12 @@ class APIManager {
     }
   }
 
-  func fetchProfileData(token: String, completion: @escaping (Result<ProfileData, Error>) -> Void) {
-    if !ProfileCache.shouldRefetch(), let cachedData = ProfileCache.data {
+  func fetchProfileData(
+    token: String,
+    forceRefresh: Bool = false,
+    completion: @escaping (Result<ProfileData, Error>) -> Void
+  ) {
+    if !forceRefresh && !ProfileCache.shouldRefetch(), let cachedData = ProfileCache.data {
       completion(.success(cachedData))
       return
     }

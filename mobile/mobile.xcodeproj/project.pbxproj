@@ -40,8 +40,11 @@
 				OnboardingView.swift,
 				Paywall.swift,
 				PreferencesView.swift,
+				PremiumComponents.swift,
 				PremiumManager.swift,
+				PremiumSuccessAnimation.swift,
 				"Preview Content/Preview Assets.xcassets",
+				ProfileManagementOverlay.swift,
 				ProfileSkeletonView.swift,
 				ProfileView.swift,
 				RaceSetupSheet.swift,
@@ -308,7 +311,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.7;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = voynow.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -339,7 +342,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.7;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = voynow.mobile;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

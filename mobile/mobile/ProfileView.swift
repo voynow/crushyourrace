@@ -58,18 +58,13 @@ struct ProfileView: View {
                 VStack(spacing: 24) {
                   ProfileInfoCard(profileData: profileData)
                   PreferencesContainer(preferences: preferencesBinding)
-                  SignOutSection(action: handleSignOut)
                 }
                 .padding()
               }
             } else {
               VStack {
-                VStack(spacing: 16) {
-                  Text("Failed to load profile")
-                    .foregroundColor(ColorTheme.lightGrey)
-                  Spacer()
-                  SignOutSection(action: handleSignOut)
-                }
+                Text("Failed to load profile")
+                  .foregroundColor(ColorTheme.lightGrey)
               }
               .frame(maxHeight: .infinity)
             }
@@ -148,131 +143,88 @@ struct ProfileView: View {
 
 struct ProfileInfoCard: View {
   let profileData: ProfileData
+  @State private var showManagementOverlay: Bool = false
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
-      HStack(spacing: 16) {
-        VStack {
-          AsyncImage(url: URL(string: profileData.profile)) { phase in
-            switch phase {
-            case .empty:
-              LoadingIcon()
-            case .success(let image):
-              image
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-            case .failure:
-              Image(systemName: "person.fill")
-                .foregroundColor(ColorTheme.midLightGrey)
-            @unknown default:
-              EmptyView()
+      Button(action: { showManagementOverlay = true }) {
+        HStack(spacing: 16) {
+          VStack {
+            AsyncImage(url: URL(string: profileData.profile)) { phase in
+              switch phase {
+              case .empty:
+                LoadingIcon()
+              case .success(let image):
+                image
+                  .resizable()
+                  .aspectRatio(contentMode: .fill)
+              case .failure:
+                Image(systemName: "person.fill")
+                  .foregroundColor(ColorTheme.midLightGrey)
+              @unknown default:
+                EmptyView()
+              }
             }
+            .frame(width: 80, height: 80)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(ColorTheme.primary, lineWidth: 2))
           }
-          .frame(width: 80, height: 80)
-          .clipShape(Circle())
-          .overlay(Circle().stroke(ColorTheme.primary, lineWidth: 2))
-        }
-        Spacer()
-        VStack(alignment: .leading, spacing: 4) {
-          Text("\(profileData.firstname) \(profileData.lastname)")
-            .font(.system(size: 24, weight: .bold))
-            .foregroundColor(ColorTheme.white)
-          if let email = profileData.email {
-            Text(email)
+          Spacer()
+          VStack(alignment: .leading, spacing: 4) {
+            Text("\(profileData.firstname) \(profileData.lastname)")
+              .font(.system(size: 24, weight: .bold))
+              .foregroundColor(ColorTheme.white)
+              .padding(.bottom, 8)
+
+            if let email = profileData.email {
+              Text(email)
+                .font(.system(size: 14))
+                .foregroundColor(ColorTheme.lightGrey)
+            } else {
+              Text("Missing email address")
+                .font(.system(size: 14))
+                .foregroundColor(ColorTheme.lightGrey)
+            }
+            Text("Member since \(profileData.memberSince)")
               .font(.system(size: 14))
               .foregroundColor(ColorTheme.lightGrey)
+              .padding(.bottom, 8)
+
+            if profileData.isPremium {
+              HStack(spacing: 4) {
+                Image(systemName: "crown.fill")
+                Text("Premium Member")
+              }
+              .font(.system(size: 14))
+              .foregroundColor(ColorTheme.green)
+            } else {
+              HStack(spacing: 4) {
+                Image(systemName: "star")
+                Text("Free Tier")
+              }
+              .font(.system(size: 14))
+              .foregroundColor(ColorTheme.primaryLight)
+            }
           }
-          Text("Member since \(formattedJoinDate)")
-            .font(.system(size: 14))
-            .foregroundColor(ColorTheme.lightGrey)
         }
       }
+      .buttonStyle(PlainButtonStyle())
     }
     .padding(.vertical, 24)
     .padding(.horizontal, 36)
     .frame(maxWidth: .infinity)
     .background(ColorTheme.darkDarkGrey)
     .cornerRadius(20)
+    .fullScreenCover(isPresented: $showManagementOverlay) {
+      ProfileManagementOverlay(
+        isPresented: $showManagementOverlay,
+        profileData: profileData
+      )
+    }
   }
 
   private var formattedJoinDate: String {
     "Sept '24"
-  }
-}
-
-struct SignOutSection: View {
-  let action: () -> Void
-  @State private var showOnboarding: Bool = false
-  @State private var showDeleteConfirmation: Bool = false
-  @EnvironmentObject var appState: AppState
-
-  var body: some View {
-    VStack {
-      HStack(spacing: 12) {
-        Button(action: { showOnboarding = true }) {
-          HStack {
-            Image(systemName: "info.circle")
-            Text("About")
-          }
-          .font(.system(size: 16, weight: .medium))
-          .foregroundColor(ColorTheme.midLightGrey)
-          .frame(maxWidth: .infinity)
-          .padding(.vertical, 12)
-          .background(ColorTheme.black)
-          .overlay(
-            RoundedRectangle(cornerRadius: 8)
-              .stroke(ColorTheme.midDarkGrey, lineWidth: 1)
-          )
-          .cornerRadius(8)
-        }
-
-        Button(action: action) {
-          HStack {
-            Image(systemName: "rectangle.portrait.and.arrow.right")
-            Text("Sign Out")
-          }
-          .font(.system(size: 16, weight: .medium))
-          .foregroundColor(ColorTheme.primaryDark)
-          .frame(maxWidth: .infinity)
-          .padding(.vertical, 12)
-          .background(ColorTheme.black)
-          .overlay(
-            RoundedRectangle(cornerRadius: 8)
-              .stroke(ColorTheme.primaryDark, lineWidth: 1)
-          )
-          .cornerRadius(8)
-        }
-      }
-
-      Button(action: {
-        showDeleteConfirmation = true
-      }) {
-        Text("Delete Account")
-          .font(.system(size: 14, weight: .regular))
-          .foregroundColor(ColorTheme.lightGrey)
-          .padding(.vertical, 12)
-          .padding(.horizontal, 18)
-          .background(ColorTheme.darkDarkGrey)
-          .cornerRadius(8)
-      }
-      .padding(.top, 8)
-      .confirmationDialog(
-        "Delete Account?",
-        isPresented: $showDeleteConfirmation,
-        titleVisibility: .visible
-      ) {
-        Button("Delete", role: .destructive) {
-          action() // Sign out first
-          // TODO: Add actual account deletion logic here
-        }
-        Button("Cancel", role: .cancel) { }
-      } message: {
-        Text("This action cannot be undone. All your data will be permanently deleted.")
-      }
-    }
-    .fullScreenCover(isPresented: $showOnboarding) {
-      OnboardingCarousel(showCloseButton: true)
-    }
   }
 }
 
