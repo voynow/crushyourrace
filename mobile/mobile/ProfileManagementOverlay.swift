@@ -6,8 +6,17 @@ struct ProfileManagementOverlay: View {
   let profileData: ProfileData
 
   @State private var showDeleteConfirmation: Bool = false
+  @State private var showSignOutConfirmation: Bool = false
   @State private var isProcessing: Bool = false
   @State private var showOnboarding: Bool = false
+  @State private var showSubscriptionManagement: Bool = false
+  @State private var showUpgradeManagement: Bool = false
+
+  @StateObject private var storeKit = StoreKitManager()
+  @State private var isLoading = false
+  @State private var showError = false
+  @State private var errorMessage = ""
+  @State private var showSuccessAnimation = false
 
   var body: some View {
     ZStack {
@@ -15,7 +24,7 @@ struct ProfileManagementOverlay: View {
       ColorTheme.black.opacity(0.9)
         .edgesIgnoringSafeArea(.all)
 
-      VStack(spacing: 32) {
+      VStack(spacing: 12) {
         // Header with close button
         HStack {
           Text("Account Settings")
@@ -93,34 +102,48 @@ struct ProfileManagementOverlay: View {
         // Membership Status
         membershipCard
 
-        // Management Options
-        VStack(spacing: 16) {
-          managementButton(
-            title: "About Crush Your Race",
-            icon: "info.circle",
-            color: ColorTheme.midLightGrey,
-            action: handleAbout
-          )
+        managementButton(
+          title: "Sign Out",
+          icon: "rectangle.portrait.and.arrow.right",
+          color: ColorTheme.primary,
+          action: { showSignOutConfirmation = true }
+        )
 
-          managementButton(
-            title: "Sign Out",
-            icon: "rectangle.portrait.and.arrow.right",
-            color: ColorTheme.primaryDark,
-            action: handleSignOut
-          )
+        managementButton(
+          title: "Delete Account",
+          icon: "trash",
+          color: ColorTheme.redPink,
+          action: { showDeleteConfirmation = true }
+        )
 
-          managementButton(
-            title: "Delete Account",
-            icon: "trash",
-            color: ColorTheme.redPink,
-            action: { showDeleteConfirmation = true }
-          )
+        Button(action: handleAbout) {
+          HStack(spacing: 4) {
+            Text("About")
+              .font(.system(size: 16, weight: .light))
+              .foregroundColor(ColorTheme.lightGrey)
+            Text("Crush Your Race")
+              .font(.system(size: 16, weight: .semibold))
+              .foregroundColor(ColorTheme.lightGrey)
+          }
         }
+        .padding(.top, 8)
 
         Spacer()
       }
       .padding(24)
       .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+      if showSubscriptionManagement {
+        subscriptionManagementOverlay
+      }
+
+      if showUpgradeManagement {
+        upgradeManagementOverlay
+      }
+
+      if showSuccessAnimation {
+        PremiumSuccessAnimation()
+      }
     }
     .confirmationDialog(
       "Delete Account?",
@@ -132,8 +155,23 @@ struct ProfileManagementOverlay: View {
     } message: {
       Text("This action cannot be undone. All your data will be permanently deleted.")
     }
+    .confirmationDialog(
+      "Sign Out?",
+      isPresented: $showSignOutConfirmation,
+      titleVisibility: .visible
+    ) {
+      Button("Sign Out", role: .destructive, action: handleSignOut)
+      Button("Cancel", role: .cancel) {}
+    } message: {
+      Text("Are you sure you want to sign out?")
+    }
     .fullScreenCover(isPresented: $showOnboarding) {
       OnboardingCarousel(showCloseButton: true)
+    }
+    .alert("Error", isPresented: $showError) {
+      Button("OK", role: .cancel) {}
+    } message: {
+      Text(errorMessage)
     }
   }
 
@@ -142,17 +180,21 @@ struct ProfileManagementOverlay: View {
       VStack(alignment: .leading, spacing: 12) {
         HStack {
           Image(systemName: profileData.isPremium ? "crown.fill" : "person.fill")
-            .foregroundColor(profileData.isPremium ? ColorTheme.green : ColorTheme.lightGrey)
+            .foregroundColor(profileData.isPremium ? ColorTheme.green : ColorTheme.primaryLight)
           Text(profileData.isPremium ? "Premium Member" : "Free Tier")
             .font(.system(size: 18, weight: .semibold))
-            .foregroundColor(profileData.isPremium ? ColorTheme.green : ColorTheme.lightGrey)
+            .foregroundColor(profileData.isPremium ? ColorTheme.green : ColorTheme.primaryLight)
           Spacer()
           Image(systemName: "chevron.right")
-            .foregroundColor(ColorTheme.midLightGrey)
+            .foregroundColor(profileData.isPremium ? ColorTheme.green : ColorTheme.primaryLight)
         }
 
         if profileData.isPremium {
           Text("Your premium membership is active")
+            .font(.system(size: 14))
+            .foregroundColor(ColorTheme.lightGrey)
+        } else {
+          Text("Sign up for premium to get unlimited access!")
             .font(.system(size: 14))
             .foregroundColor(ColorTheme.lightGrey)
         }
@@ -184,11 +226,10 @@ struct ProfileManagementOverlay: View {
   }
 
   private func handleSubscription() {
-    // TODO: Implement subscription management
     if profileData.isPremium {
-      // Open subscription management
+      showSubscriptionManagement = true
     } else {
-      // Open upgrade flow
+      showUpgradeManagement = true
     }
   }
 
@@ -218,5 +259,167 @@ struct ProfileManagementOverlay: View {
 
   private func handleAbout() {
     showOnboarding = true
+  }
+
+  private var subscriptionManagementOverlay: some View {
+    ZStack {
+      ColorTheme.black.opacity(0.9)
+        .edgesIgnoringSafeArea(.all)
+
+      VStack(spacing: 32) {
+        // Premium Crown Icon
+        Image(systemName: "crown.fill")
+          .font(.system(size: 44))
+          .foregroundColor(ColorTheme.green)
+          .padding(.top, 8)
+
+        VStack(spacing: 16) {
+          Text("Premium Membership")
+            .font(.system(size: 28, weight: .bold))
+            .foregroundColor(ColorTheme.white)
+
+          VStack(spacing: 24) {
+            Text(
+              "As a premium member, you're part of an elite community of dedicated athletes. Your feedback directly shapes the future of Crush Your Race."
+            )
+            .font(.system(size: 16))
+            .foregroundColor(ColorTheme.lightGrey)
+            .multilineTextAlignment(.center)
+
+            Text(
+              "You have priority access to me (Jamie) at voynow99@gmail.com. Please reach out before making any changes to your subscription - I'd love to hear from you!"
+            )
+            .font(.system(size: 16))
+            .foregroundColor(ColorTheme.lightGrey)
+            .multilineTextAlignment(.center)
+          }
+        }
+        .padding(.horizontal)
+
+        VStack(spacing: 16) {
+          Button(action: {
+            if let url = URL(string: "itms-apps://apps.apple.com/account/subscriptions") {
+              UIApplication.shared.open(url)
+            }
+            showSubscriptionManagement = false
+          }) {
+            HStack {
+              Text("Manage Subscription")
+                .padding(.horizontal, 4)
+              Spacer()
+              Image(systemName: "chevron.right")
+            }
+            .foregroundColor(ColorTheme.primary)
+            .padding(16)
+            .background(ColorTheme.darkGrey)
+            .cornerRadius(12)
+          }
+
+          Button(action: { showSubscriptionManagement = false }) {
+            Text("Close")
+              .font(.system(size: 16, weight: .medium))
+              .foregroundColor(ColorTheme.lightGrey)
+              .padding(.vertical, 8)
+          }
+        }
+        .padding(.horizontal)
+      }
+      .padding(32)
+      .background(ColorTheme.darkDarkGrey)
+      .cornerRadius(20)
+      .padding(24)
+    }
+  }
+
+  private var upgradeManagementOverlay: some View {
+    ZStack {
+      ColorTheme.black.opacity(0.9)
+        .edgesIgnoringSafeArea(.all)
+
+      VStack(spacing: 32) {
+        // Premium Crown Icon
+        Image(systemName: "crown.fill")
+          .font(.system(size: 44))
+          .foregroundColor(ColorTheme.primary)
+          .padding(.top, 8)
+
+        VStack(spacing: 20) {
+          Text("Unlock Premium")
+            .font(.system(size: 28, weight: .bold))
+            .foregroundColor(ColorTheme.white)
+
+          Text("Join our elite community of dedicated athletes")
+            .font(.system(size: 16))
+            .foregroundColor(ColorTheme.lightGrey)
+            .multilineTextAlignment(.center)
+        }
+
+        // Pricing Section
+        PricingSection()
+
+        // Benefits Section
+        PremiumBenefits()
+
+        Spacer()
+
+        // Action Buttons
+        VStack(spacing: 16) {
+          Button(action: {
+            handlePurchase()
+          }) {
+            HStack {
+              if isLoading {
+                ProgressView()
+                  .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                  .scaleEffect(0.8)
+              }
+              Image(systemName: "star.fill")
+              Text(isLoading ? "Processing..." : "Get Premium")
+            }
+            .font(.system(size: 16, weight: .medium))
+            .foregroundColor(ColorTheme.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(ColorTheme.primary)
+            .cornerRadius(8)
+          }
+          .disabled(isLoading)
+
+          Button(action: { showUpgradeManagement = false }) {
+            Text("Maybe Later")
+              .font(.system(size: 16, weight: .medium))
+              .foregroundColor(ColorTheme.lightGrey)
+          }
+        }
+        .padding(.horizontal, 36)
+      }
+      .padding(24)
+      .background(ColorTheme.darkDarkGrey)
+      .cornerRadius(20)
+      .padding(12)
+    }
+  }
+
+  private func handlePurchase() {
+    isLoading = true
+
+    Task {
+      do {
+        try await storeKit.purchase {
+          withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+            showSuccessAnimation = true
+          }
+        }
+        await MainActor.run {
+          isLoading = false
+        }
+      } catch {
+        await MainActor.run {
+          errorMessage = error.localizedDescription
+          showError = true
+          isLoading = false
+        }
+      }
+    }
   }
 }

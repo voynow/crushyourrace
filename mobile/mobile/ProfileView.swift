@@ -203,7 +203,7 @@ struct ProfileInfoCard: View {
                 Text("Free Tier")
               }
               .font(.system(size: 14))
-              .foregroundColor(ColorTheme.lightGrey)
+              .foregroundColor(ColorTheme.primaryLight)
             }
           }
         }
