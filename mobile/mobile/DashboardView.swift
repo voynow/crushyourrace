@@ -106,25 +106,29 @@ struct DashboardView: View {
     }
 
     isLoadingTrainingWeek = true
+    // First fetch training week data
     fetchTrainingWeekData {
       isLoadingTrainingWeek = false
-    }
 
-    fetchWeeklySummaries {}
+      // Then fetch the rest with a slight delay
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        fetchWeeklySummaries {}
 
-    if let token = appState.jwtToken {
-      APIManager.shared.fetchProfileData(token: token) { result in
-        if case .failure(let error) = result {
-          print("Error pre-fetching profile: \(error)")
-        }
-      }
+        if let token = appState.jwtToken {
+          APIManager.shared.fetchProfileData(token: token) { result in
+            if case .failure(let error) = result {
+              print("Error pre-fetching profile: \(error)")
+            }
+          }
 
-      APIManager.shared.fetchTrainingPlan(token: token) { result in
-        DispatchQueue.main.async {
-          if case .success(let plan) = result {
-            self.trainingPlan = plan
-          } else if case .failure(let error) = result {
-            print("Error pre-fetching training plan: \(error)")
+          APIManager.shared.fetchTrainingPlan(token: token) { result in
+            DispatchQueue.main.async {
+              if case .success(let plan) = result {
+                self.trainingPlan = plan
+              } else if case .failure(let error) = result {
+                print("Error pre-fetching training plan: \(error)")
+              }
+            }
           }
         }
       }
@@ -168,12 +172,6 @@ struct DashboardView: View {
         }
         completion()
       }
-    }
-  }
-
-  private func checkLoadingComplete() {
-    if trainingWeekData != nil && weeklySummaries != nil {
-      isLoadingTrainingWeek = false
     }
   }
 
