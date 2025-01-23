@@ -23,8 +23,11 @@ struct mobileApp: App {
             {
               appState.authStrategy = strategy
             }
-        
-            appState.setShowPaywall()
+
+            // Delay the paywall popup
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+              appState.setShowPaywall()
+            }
           } else {
             appState.status = .loggedOut
           }
