@@ -65,6 +65,27 @@ struct ProfileView: View {
               VStack {
                 Text("Failed to load profile")
                   .foregroundColor(ColorTheme.lightGrey)
+
+                Spacer()
+
+                Button(action: handleSignOut) {
+                  HStack {
+                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                    Text("Sign Out")
+                  }
+                  .font(.system(size: 16, weight: .medium))
+                  .foregroundColor(ColorTheme.primaryDark)
+                  .frame(maxWidth: .infinity)
+                  .padding(.vertical, 12)
+                  .background(ColorTheme.darkDarkGrey)
+                  .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                      .stroke(ColorTheme.primaryDark, lineWidth: 1)
+                  )
+                  .cornerRadius(8)
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
               }
               .frame(maxHeight: .infinity)
             }

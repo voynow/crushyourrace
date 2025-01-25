@@ -178,6 +178,22 @@ async def authenticate(
         raise HTTPException(status_code=400, detail="Invalid request")
 
 
+@app.post("/v2/authenticate/")
+async def authenticate_v2(
+    code: str = Body(...),
+    user_id: str = Body(...),
+    identity_token: str = Body(...),
+):
+    if code:
+        return auth_manager.strava_authenticate_v2(code=code)
+    elif user_id and identity_token:
+        return auth_manager.apple_authenticate_v2(
+            user_id=user_id, identity_token=identity_token
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+
 @app.post("/strava-webhook/")
 async def strava_webhook(request: Request, background_tasks: BackgroundTasks) -> dict:
     """

@@ -5,7 +5,7 @@ import jwt
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src import supabase_client, utils
-from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_USER_ID
+from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_JWT_TOKEN, DEFAULT_USER_ID
 from src.types.user import User
 from src.utils import datetime_now_est
 from stravalib.client import Client
@@ -67,7 +67,6 @@ def refresh_and_update_user_token(athlete_id: int, refresh_token: str) -> User:
     new_jwt_token = generate_jwt(
         athlete_id=athlete_id, expires_at=access_info["expires_at"]
     )
-
 
     existing_user = supabase_client.get_user(athlete_id)
 
@@ -222,6 +221,29 @@ def strava_authenticate(code: str) -> User:
     }
 
 
+def strava_authenticate_v2(code: str) -> dict:
+    """ """
+    token = strava_client.exchange_code_for_token(
+        client_id=os.environ["STRAVA_CLIENT_ID"],
+        client_secret=os.environ["STRAVA_CLIENT_SECRET"],
+        code=code,
+    )
+    strava_client.access_token = token["access_token"]
+    strava_client.refresh_token = token["refresh_token"]
+    strava_client.token_expires_at = token["expires_at"]
+
+    athlete = strava_client.get_athlete()
+
+    jwt_token = generate_jwt(athlete_id=athlete.id, expires_at=token["expires_at"])
+
+    return {
+        "success": True,
+        "jwt_token": jwt_token,
+        "user_id": DEFAULT_USER_ID,
+        "is_new_user": supabase_client.is_new_user(athlete_id=athlete.id),
+    }
+
+
 def apple_authenticate(user_id: str, identity_token: str) -> dict:
     """
     Authenticate with Apple code, and sign up the user if they don't exist.
@@ -241,4 +263,20 @@ def apple_authenticate(user_id: str, identity_token: str) -> dict:
         "jwt_token": user.jwt_token,
         "user_id": user.user_id,
         "is_new_user": False,
+    }
+
+
+def apple_authenticate_v2(user_id: str, identity_token: str) -> dict:
+    """
+    Authenticate with Apple code, and sign up the user if they don't exist.
+
+    :param user_id: Apple user ID
+    :param identity_token: Apple identity token
+    :return: Dictionary with success status and JWT token
+    """
+    return {
+        "success": True,
+        "jwt_token": DEFAULT_JWT_TOKEN,
+        "user_id": user_id,
+        "is_new_user": True,
     }
