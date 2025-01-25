@@ -225,25 +225,6 @@ def strava_authenticate(code: str) -> User:
     }
 
 
-def strava_authenticate_v2(code: str) -> dict:
-    """ """
-    token = get_strava_token(code)
-    strava_client.access_token = token["access_token"]
-    strava_client.refresh_token = token["refresh_token"]
-    strava_client.token_expires_at = token["expires_at"]
-
-    athlete = strava_client.get_athlete()
-
-    jwt_token = generate_jwt(athlete_id=athlete.id, expires_at=token["expires_at"])
-
-    return {
-        "success": True,
-        "jwt_token": jwt_token,
-        "user_id": DEFAULT_USER_ID,
-        "is_new_user": supabase_client.is_new_user(athlete_id=athlete.id),
-    }
-
-
 def apple_authenticate(user_id: str, identity_token: str) -> dict:
     """
     Authenticate with Apple code, and sign up the user if they don't exist.
@@ -262,21 +243,5 @@ def apple_authenticate(user_id: str, identity_token: str) -> dict:
         "success": True,
         "jwt_token": user.jwt_token,
         "user_id": user.user_id,
-        "is_new_user": True,
-    }
-
-
-def apple_authenticate_v2(user_id: str, identity_token: str) -> dict:
-    """
-    Authenticate with Apple code, and sign up the user if they don't exist.
-
-    :param user_id: Apple user ID
-    :param identity_token: Apple identity token
-    :return: Dictionary with success status and JWT token
-    """
-    return {
-        "success": True,
-        "jwt_token": DEFAULT_JWT_TOKEN,
-        "user_id": user_id,
         "is_new_user": True,
     }
