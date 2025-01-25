@@ -157,7 +157,6 @@ async def authenticate(
     code: Optional[str] = Form(None),
     user_id: Optional[str] = Form(None),
     identity_token: Optional[str] = Form(None),
-    email: Optional[str] = Form(None),
 ):
     """
     Authenticate with Strava code or Apple credentials

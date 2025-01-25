@@ -194,9 +194,9 @@ def strava_authenticate(code: str) -> User:
     strava_client.token_expires_at = token["expires_at"]
 
     athlete = strava_client.get_athlete()
-
     jwt_token = generate_jwt(athlete_id=athlete.id, expires_at=token["expires_at"])
 
+    is_new_user = supabase_client.is_new_user(athlete_id=athlete.id)
     maybe_existing_user = supabase_client.get_or_create_user(
         athlete_id=athlete.id, user_id=DEFAULT_USER_ID
     )
@@ -221,7 +221,7 @@ def strava_authenticate(code: str) -> User:
         "success": True,
         "jwt_token": user.jwt_token,
         "user_id": user.user_id,
-        "is_new_user": supabase_client.is_new_user(athlete_id=athlete.id),
+        "is_new_user": is_new_user,
     }
 
 
