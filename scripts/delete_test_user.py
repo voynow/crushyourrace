@@ -22,6 +22,7 @@ def delete_test_user() -> None:
     clear_tables = [
         "user",
         "user_auth",
+        "user_combined",
         "training_week",
         "training_plan",
         "mileage_recommendation",

@@ -72,6 +72,8 @@ class AuthManager: ObservableObject {
           self.appState.jwtToken = authResponse.jwt_token
           self.appState.authStrategy = .strava
 
+          print("Auth Response: \(authResponse)")
+
           if let isNewUser = authResponse.is_new_user, isNewUser {
             self.appState.status = .newUser
           } else {

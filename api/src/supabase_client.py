@@ -196,6 +196,16 @@ def does_user_exist(athlete_id: Optional[int], user_id: Optional[str]) -> bool:
     return bool(response.data)
 
 
+def is_new_user(athlete_id: Optional[int], user_id: Optional[str]) -> bool:
+    """
+    The inverse of does_user_exist
+
+    :param athlete_id: The ID of the athlete
+    :return: True if the user is new, False otherwise
+    """
+    return not does_user_exist(athlete_id=athlete_id, user_id=user_id)
+
+
 def upsert_training_week(
     athlete_id: int,
     future_training_week: TrainingWeek,

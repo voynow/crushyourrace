@@ -123,29 +123,16 @@ final class OnboardingViewModel: ObservableObject {
       return
     }
 
-    switch appState.authStrategy {
-    case .strava:
-      if let token = appState.jwtToken {
-        APIManager.shared.updateEmail(token: token, email: email) { [weak self] result in
-          DispatchQueue.main.async {
-            self?.handleEmailUpdateResult(result, email: email)
-          }
+    if let token = appState.jwtToken {
+      APIManager.shared.updateEmail(token: token, email: email) { [weak self] result in
+        DispatchQueue.main.async {
+          self?.handleEmailUpdateResult(result, email: email)
         }
-      } else {
-        showError(message: "No token found")
       }
-
-    case .apple:
-      if let userId = appState.userId {
-        APIManager.shared.updateEmail(userId: userId, email: email) { [weak self] result in
-          DispatchQueue.main.async {
-            self?.handleEmailUpdateResult(result, email: email)
-          }
-        }
-      } else {
-        showError(message: "No user ID found")
-      }
+    } else {
+      showError(message: "No token found")
     }
+
   }
 
   private func handleEmailUpdateResult(_ result: Result<Void, Error>, email: String) {
