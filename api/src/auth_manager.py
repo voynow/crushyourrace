@@ -221,7 +221,7 @@ def strava_authenticate(code: str) -> User:
         "success": True,
         "jwt_token": user.jwt_token,
         "user_id": user.user_id,
-        "is_new_user": False,
+        "is_new_user": supabase_client.is_new_user(athlete_id=athlete.id),
     }
 
 
@@ -262,7 +262,7 @@ def apple_authenticate(user_id: str, identity_token: str) -> dict:
         "success": True,
         "jwt_token": user.jwt_token,
         "user_id": user.user_id,
-        "is_new_user": False,
+        "is_new_user": True,
     }
 
 

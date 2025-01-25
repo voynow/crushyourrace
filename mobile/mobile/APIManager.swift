@@ -656,6 +656,71 @@ class APIManager {
     }.resume()
   }
 
+  func createUser(
+    jwtToken: String,
+    code: String,
+    email: String?,
+    completion: @escaping (Result<Void, Error>) -> Void
+  ) {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    guard let url = URL(string: "\(apiURL)/user/") else {
+      completion(
+        .failure(
+          NSError(
+            domain: "",
+            code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]
+          )))
+      return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    var body: [String: Any] = [
+      "jwt_token": jwtToken,
+      "code": code,
+    ]
+
+    if let email = email {
+      body["email"] = email
+    }
+
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+    session.dataTask(with: request) { data, response, error in
+      let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+      print("APIManager: createUser took \(timeElapsed) seconds")
+
+      if let error = error {
+        completion(.failure(error))
+        return
+      }
+
+      if let httpResponse = response as? HTTPURLResponse {
+        if !(200..<300).contains(httpResponse.statusCode) {
+          if let data = data, let responseStr = String(data: data, encoding: .utf8) {
+            print("Create user error response: \(responseStr)")
+          }
+          completion(
+            .failure(
+              NSError(
+                domain: "",
+                code: httpResponse.statusCode,
+                userInfo: [
+                  NSLocalizedDescriptionKey:
+                    "Failed to create user (Status: \(httpResponse.statusCode))"
+                ]
+              )))
+          return
+        }
+      }
+
+      completion(.success(()))
+    }.resume()
+  }
+
   // Helper functions
 
   private struct GenericResponse: Decodable {
