@@ -180,9 +180,9 @@ async def authenticate(
 
 @app.post("/v2/authenticate/")
 async def authenticate_v2(
-    code: str = Body(...),
-    user_id: str = Body(...),
-    identity_token: str = Body(...),
+    code: Optional[str] = Form(None),
+    user_id: Optional[str] = Form(None),
+    identity_token: Optional[str] = Form(None),
 ):
     if code:
         return auth_manager.strava_authenticate_v2(code=code)
