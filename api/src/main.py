@@ -238,6 +238,16 @@ async def update_all_users_trigger(request: Request) -> dict:
     return {"success": True}
 
 
+@app.post("/user/")
+async def create_user(
+    jwt_token: str = Body(...),
+    code: str = Body(...),
+    email: Optional[str] = Body(None),
+):
+    supabase_client.create_user(jwt_token=jwt_token, code=code, email=email)
+    return {"success": True}
+
+
 @app.get("/training-plan/", response_model=TrainingPlan)
 async def get_training_plan(
     user: User = Depends(auth_manager.validate_user),

@@ -180,7 +180,24 @@ def upsert_user(user: User):
     table.upsert(row_data, on_conflict="athlete_id,user_id").execute()
 
 
-def does_user_exist(athlete_id: Optional[int] = None, user_id: Optional[str] = None) -> bool:
+def create_user(jwt_token: str, code: str, email: Optional[str] = None) -> User:
+    strava_token = auth_manager.get_strava_token(code)
+    athlete_id = auth_manager.decode_jwt(jwt_token, verify_exp=True)
+    user = User(
+        athlete_id=athlete_id,
+        email=email,
+        access_token=strava_token["access_token"],
+        refresh_token=strava_token["refresh_token"],
+        expires_at=strava_token["expires_at"],
+        jwt_token=jwt_token,
+    )
+    upsert_user(user)
+    return user
+
+
+def does_user_exist(
+    athlete_id: Optional[int] = None, user_id: Optional[str] = None
+) -> bool:
     """
     Check if a user exists in the user table
 
@@ -196,7 +213,9 @@ def does_user_exist(athlete_id: Optional[int] = None, user_id: Optional[str] = N
     return bool(response.data)
 
 
-def is_new_user(athlete_id: Optional[int] = None, user_id: Optional[str] = None) -> bool:
+def is_new_user(
+    athlete_id: Optional[int] = None, user_id: Optional[str] = None
+) -> bool:
     """
     The inverse of does_user_exist
 

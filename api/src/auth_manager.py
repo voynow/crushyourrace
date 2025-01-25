@@ -172,6 +172,14 @@ def get_strava_client(athlete_id: int) -> Client:
     return get_configured_strava_client(user)
 
 
+def get_strava_token(code: str) -> dict:
+    return strava_client.exchange_code_for_token(
+        client_id=os.environ["STRAVA_CLIENT_ID"],
+        client_secret=os.environ["STRAVA_CLIENT_SECRET"],
+        code=code,
+    )
+
+
 def strava_authenticate(code: str) -> User:
     """
     Authenticate athlete with code from Strava, exchange with strava client for
@@ -180,11 +188,7 @@ def strava_authenticate(code: str) -> User:
     :param code: temporary authorization code
     :return: User
     """
-    token = strava_client.exchange_code_for_token(
-        client_id=os.environ["STRAVA_CLIENT_ID"],
-        client_secret=os.environ["STRAVA_CLIENT_SECRET"],
-        code=code,
-    )
+    token = get_strava_token(code)
     strava_client.access_token = token["access_token"]
     strava_client.refresh_token = token["refresh_token"]
     strava_client.token_expires_at = token["expires_at"]
@@ -223,11 +227,7 @@ def strava_authenticate(code: str) -> User:
 
 def strava_authenticate_v2(code: str) -> dict:
     """ """
-    token = strava_client.exchange_code_for_token(
-        client_id=os.environ["STRAVA_CLIENT_ID"],
-        client_secret=os.environ["STRAVA_CLIENT_SECRET"],
-        code=code,
-    )
+    token = get_strava_token(code)
     strava_client.access_token = token["access_token"]
     strava_client.refresh_token = token["refresh_token"]
     strava_client.token_expires_at = token["expires_at"]
