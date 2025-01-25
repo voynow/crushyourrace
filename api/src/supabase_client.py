@@ -180,7 +180,7 @@ def upsert_user(user: User):
     table.upsert(row_data, on_conflict="athlete_id,user_id").execute()
 
 
-def does_user_exist(athlete_id: Optional[int], user_id: Optional[str]) -> bool:
+def does_user_exist(athlete_id: Optional[int] = None, user_id: Optional[str] = None) -> bool:
     """
     Check if a user exists in the user table
 
@@ -196,7 +196,7 @@ def does_user_exist(athlete_id: Optional[int], user_id: Optional[str]) -> bool:
     return bool(response.data)
 
 
-def is_new_user(athlete_id: Optional[int], user_id: Optional[str]) -> bool:
+def is_new_user(athlete_id: Optional[int] = None, user_id: Optional[str] = None) -> bool:
     """
     The inverse of does_user_exist
 
