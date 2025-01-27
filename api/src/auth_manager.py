@@ -154,8 +154,8 @@ def authenticate_athlete(athlete_id: int) -> User:
     :return: User
     """
     user = supabase_client.get_user(athlete_id)
-    if datetime_now_est() < utils.make_tz_aware(user.expires_at):
-        return user
+    # if datetime_now_est() < utils.make_tz_aware(user.expires_at):
+    #     return user
     return refresh_and_update_user_token(athlete_id, user.refresh_token)
 
 
