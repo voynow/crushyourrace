@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from typing import Callable, Optional
 
 from fastapi import (
@@ -202,8 +203,14 @@ async def refresh_user_data(
     :param user: The authenticated user
     :return: Success status
     """
+    start_time = time.time()
     update_training_week(user, ExeType.NEW_WEEK, dt=utils.get_last_sunday())
+    print(f"New week update time: {time.time() - start_time:.2f} seconds")
+
+    start_time = time.time()
     update_training_week(user, ExeType.MID_WEEK, dt=utils.datetime_now_est())
+    print(f"Mid-week update time: {time.time() - start_time:.2f} seconds")
+
     return {"success": True}
 
 
