@@ -9,6 +9,8 @@ struct DashboardView: View {
   @State private var errorMessage: String = ""
   @State private var selectedTab: Int = 0
   @State private var trainingPlan: TrainingPlan?
+  @State private var showRaceSetupSheet: Bool = false
+  @State private var preferences = Preferences()
 
   var body: some View {
     ZStack {
@@ -46,9 +48,32 @@ struct DashboardView: View {
             } else if isLoadingTrainingWeek {
               DashboardSkeletonView()
             } else {
-              Text("No training data available")
-                .font(.headline)
-                .foregroundColor(ColorTheme.lightGrey)
+              VStack(spacing: 16) {
+                Text("Let's get you started!")
+                  .font(.title3)
+                  .foregroundColor(ColorTheme.lightGrey)
+                Text("Set up your race details to see your training week.")
+                  .font(.subheadline)
+                  .foregroundColor(ColorTheme.midLightGrey)
+                  .multilineTextAlignment(.center)
+                  .padding(.horizontal)
+                Button(action: {
+                  showRaceSetupSheet = true
+                }) {
+                  Text("Set Up Race Details")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(ColorTheme.black)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(ColorTheme.primary)
+                    .cornerRadius(8)
+                }
+              }
+              .padding()
+              .background(ColorTheme.darkDarkGrey)
+              .cornerRadius(12)
+              .frame(maxHeight: .infinity, alignment: .center)
+              .padding()
             }
           }
           .refreshable {
@@ -96,6 +121,16 @@ struct DashboardView: View {
         title: Text("Error"),
         message: Text(errorMessage),
         dismissButton: .default(Text("OK"))
+      )
+    }
+    .sheet(isPresented: $showRaceSetupSheet) {
+      RaceSetupSheet(
+        preferences: $preferences,
+        isPresented: $showRaceSetupSheet,
+        onSave: {
+          fetchData()
+          appState.setGeneratingPlanState()
+        }
       )
     }
   }

@@ -301,6 +301,7 @@ enum WeekType: String, Codable {
   case peak = "peak"
   case taper = "taper"
   case race = "race"
+  case maintenance = "maintenance"
 
   var color: Color {
     switch self {
@@ -308,6 +309,7 @@ enum WeekType: String, Codable {
     case .peak: return ColorTheme.redPink
     case .taper: return ColorTheme.yellow
     case .race: return ColorTheme.green
+    case .maintenance: return ColorTheme.primary
     }
   }
 }
