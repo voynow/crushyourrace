@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from src import supabase_client
@@ -39,11 +39,12 @@ def get_mileage_stats(weekly_mileages):
 
 
 def get_week_ranges_to_race(
-    dt: datetime.datetime, race_date: datetime.date
+    dt: datetime.datetime, race_date: Optional[datetime.date]
 ) -> List[WeekRange]:
     """
     Returns the start and end dates of every week from today to the race date.
-    Weeks start on Monday and end on Sunday.
+    Weeks start on Monday and end on Sunday. If race_date is None, choose arbitrary
+    date in the future for generic training plan generation purposes.
 
     :param race_date: The date of the race (datetime object, UTC).
     :return: A list of WeekRange objects representing each week.
@@ -51,6 +52,12 @@ def get_week_ranges_to_race(
     today = dt.date()
     days_until_monday = (7 - today.weekday()) % 7
     start_date = today + datetime.timedelta(days=days_until_monday)
+
+    if race_date is None:
+        # create arbitrary race date 12 weeks from now
+        race_date = start_date + datetime.timedelta(days=84)
+
+    week_ranges = []
 
     week_ranges = []
     current_date = start_date
@@ -106,7 +113,21 @@ def gen_training_plan(
 
 # Example Training Plans
 
-## Intermediate Marathon
+## Beginner Marathon (Little to no running experience)
+### Build: Weeks 1-12
+- Total Volume: 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 (increase by 1 mile per week)
+- Long Run: 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13 (increase by 1 mile per week)
+### Peak: Weeks 13-16
+- Total Volume: 26, 27, 28, 29 (hold volume at 29 miles per week)
+- Long Run: 14, 15, 16, 17 (get comfortable with bigger long runs)
+### Tapering: Weeks 17-18
+- Total Volume: 24, 22 (decrease by 2 miles per week)
+- Long Run: 12, 10 (decrease by 2 miles per week)
+### Race Week: Week 19
+- Total Volume: 32 (two-ish shakeout runs plus the marathon race)
+- Long Run: 26 (marathon distance)
+
+## Intermediate Marathon (If they are already putting in solid mileage)
 ### Build: Weeks 1-8
 - Total Volume: 20, 22, 24, 26, 28, 30, 32, 34 (increase by 2 miles per week)
 - Long Run: 10, 11, 12, 13, 14, 15, 16, 17 (increase by 1 mile per week)
@@ -120,7 +141,7 @@ def gen_training_plan(
 - Total Volume: 32 (two-ish shakeout runs plus the marathon race)
 - Long Run: 26 (marathon distance)
 
-## Experienced Marathon
+## Experienced Marathon (If they are already putting in solid mileage)
 ### Build: Weeks 1-6
 - Total Volume: 30, 40, 45, 50, 55, 55 (push toward 55 miles per week)
 - Long Run: 14, 16, 16, 18, 18, 18 (get comfortable with 18 mile long runs)
@@ -133,6 +154,15 @@ def gen_training_plan(
 ### Race Week: Week 13
 - Total Volume: 32 (two-ish shakeout runs plus the marathon race)
 - Long Run: 26 (marathon distance)
+
+## No Race Date Provided: Simply get them into shape or keep them in shape; No need to peak
+### Build: Weeks 1-4
+- Total Volume: 14, 16, 18, 20 (increase by 2 miles per week)
+- Long Run: 7, 8, 8, 9 (increase by 1 mile per week)
+### Maintenance: Weeks 5-12
+- Total Volume: 20, 22, 20, 24, 20, 22, 20, 26 (trying out different volume around 20-26 miles per week)
+- Long Run: 10, 12, 10, 12, 10, 12, 10, 12 (trying out different long run distances around 10-12 miles)
+Note: Maintainance volume and long run distances are heavily dependent on the athlete's current fitness level.
 
 ---
 

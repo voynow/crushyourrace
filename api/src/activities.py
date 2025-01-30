@@ -1,4 +1,5 @@
 import datetime
+import logging
 from collections import defaultdict
 from typing import List, Optional
 
@@ -6,6 +7,8 @@ from src import constants
 from src.types.activity import Activity, DailyActivity, WeekSummary
 from src.utils import round_all_floats
 from stravalib.client import Client
+
+logging.getLogger("stravalib.protocol").setLevel(logging.ERROR)
 
 
 def add_missing_dates(

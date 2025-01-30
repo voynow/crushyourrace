@@ -3,49 +3,17 @@ import logging
 from typing import List, Tuple
 
 from src import activities, supabase_client
-from src.constants import COACH_ROLE
-from src.llm import get_completion_json
 from src.training_plan import gen_training_plan_pipeline
-from src.types.activity import DailyActivity, WeekSummary
+from src.types.activity import DailyActivity
 from src.types.mileage_recommendation import (
     MileageRecommendation,
     MileageRecommendationRow,
 )
 from src.types.update_pipeline import ExeType
-from src.types.user import Preferences, User
+from src.types.user import User
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-
-def gen_mileage_recommendation(
-    user_preferences: Preferences,
-    weekly_summaries: List[WeekSummary],
-) -> MileageRecommendation:
-    """
-    Recommend a mileage target for total volume and long run
-
-    This should only be called on Sunday night. If called mid-week, recs will
-    break due to the current weekly summary not being complete.
-
-    :param weekly_summaries: The athlete's weekly summaries
-    :return: A MileageRecommendation
-    """
-    weekly_summaries_str = "\n".join([str(week) for week in weekly_summaries])
-
-    message = f"""{COACH_ROLE}
-
-Your athlete has provided the following preferences: {user_preferences}
-
-Here is a summary of the athlete's training for the past {len(weekly_summaries)} weeks (in reverse chronological order):
-{weekly_summaries_str}
-
-Your task is to provide training recommendations for the upcoming week."""
-
-    return get_completion_json(
-        message=message,
-        response_model=MileageRecommendation,
-    )
 
 
 def gen_mileage_rec_wrapper(
@@ -66,21 +34,15 @@ def gen_mileage_rec_wrapper(
         )
 
     weekly_summaries = activities.get_weekly_summaries(daily_activity=daily_activity)
-    if user.preferences.race_date and user.preferences.race_distance:
-        training_plan = gen_training_plan_pipeline(
-            user=user, weekly_summaries=weekly_summaries, dt=dt
-        )
-        next_week_plan = training_plan.training_plan_weeks[0]
-        return MileageRecommendation(
-            thoughts=next_week_plan.notes,
-            total_volume=next_week_plan.total_distance,
-            long_run=next_week_plan.long_run_distance,
-        )
-    else:
-        return gen_mileage_recommendation(
-            user_preferences=user.preferences,
-            weekly_summaries=weekly_summaries,
-        )
+    training_plan = gen_training_plan_pipeline(
+        user=user, weekly_summaries=weekly_summaries, dt=dt
+    )
+    next_week_plan = training_plan.training_plan_weeks[0]
+    return MileageRecommendation(
+        thoughts=next_week_plan.notes,
+        total_volume=next_week_plan.total_distance,
+        long_run=next_week_plan.long_run_distance,
+    )
 
 
 def create_new_mileage_recommendation(

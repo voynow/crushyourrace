@@ -20,6 +20,7 @@ class WeekType(StrEnum):
     PEAK = "peak"
     TAPER = "taper"
     RACE = "race"
+    MAINTENANCE = "maintenance"
 
 
 class TrainingPlanWeek(BaseModel):

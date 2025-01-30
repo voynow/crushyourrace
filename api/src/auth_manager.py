@@ -4,16 +4,16 @@ import os
 import jwt
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src import supabase_client, utils
-from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_JWT_TOKEN, DEFAULT_USER_ID
+from src import supabase_client
+from src.constants import DEFAULT_ATHLETE_ID, DEFAULT_USER_ID
 from src.types.user import User
-from src.utils import datetime_now_est
 from stravalib.client import Client
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-bearer_scheme = HTTPBearer()
+logging.getLogger("stravalib.protocol").setLevel(logging.ERROR)
 
+bearer_scheme = HTTPBearer()
 strava_client = Client()
 
 
