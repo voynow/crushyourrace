@@ -24,11 +24,16 @@ def compute_activity_metrics(activity):
         sec=floor(minute_remainder * 60),
     )
 
+    # is elevation gain valid?
+    is_valid_elevation_gain = (
+        elevation_gain_in_feet != 0 or elevation_gain_in_feet is not None
+    )
+
     return {
         "distance_in_miles": round(distance_in_miles, 2),
         "average_speed_per_mile": average_speed_per_mile,
         "elevation_gain_in_feet": (
-            round(elevation_gain_in_feet, 2) if elevation_gain_in_feet != 0 else None
+            round(elevation_gain_in_feet, 2) if is_valid_elevation_gain else None
         ),
         "average_heartrate": (
             round(activity.average_heartrate, 2)
