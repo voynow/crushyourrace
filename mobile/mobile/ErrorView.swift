@@ -21,6 +21,12 @@ struct ErrorView: View {
             .foregroundColor(ColorTheme.midLightGrey)
             .multilineTextAlignment(.center)
             .padding(.horizontal)
+
+          Text("If this issue persists, please contact support (voynow99@gmail.com)")
+            .font(.system(size: 16))
+            .foregroundColor(ColorTheme.midLightGrey)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
         }
       }
       .padding(40)

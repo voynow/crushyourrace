@@ -2,121 +2,149 @@ import SwiftUI
 
 struct WaitingForGenerationView: View {
   @EnvironmentObject var appState: AppState
-  @State private var animationPhase = 0
-  @State private var showOnboarding: Bool = false
+  @State private var dotPhase = 0
+  @State private var opacity = 0.8
+  @State private var showOnboarding = false
+  @State private var currentThinkingPhase = 0
+  @State private var pulseSize: CGFloat = 1.0
   let isAppleAuth: Bool
+
+  private let thinkingPhrases = [
+    "AI is thinking...",
+    "Analyzing your training history...",
+    "Our AI agent is impressed!",
+    "Generating your training plan...",
+    "Optimizing peak mileage and long runs...",
+    "Your are going to crush it!",
+    "Planning your upcoming week...",
+    "Fine tuning to your preferences...",
+    "This is going to be awesome...",
+  ]
 
   var body: some View {
     ZStack {
+      // Background
       ColorTheme.black.edgesIgnoringSafeArea(.all)
 
+      // Minimal gradient overlay
+      LinearGradient(
+        gradient: Gradient(colors: [
+          ColorTheme.primary.opacity(0.05),
+          ColorTheme.black,
+        ]),
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .edgesIgnoringSafeArea(.all)
+
+      // Content
       VStack(spacing: 40) {
+        // Subtle branding
+        HStack {
+          Text("Crush ")
+            .font(.system(size: 20, weight: .black))
+            .foregroundColor(ColorTheme.primaryLight)
+            + Text("Your Race")
+            .font(.system(size: 20, weight: .black))
+            .foregroundColor(ColorTheme.primary)
+        }
+        .opacity(0.8)
+        .padding(.top, 32)
+
         Spacer()
 
-        Text("Crush ")
-          .font(.system(size: 28, weight: .black))
-          .foregroundColor(ColorTheme.primaryLight)
-          + Text("Your Race")
-          .font(.system(size: 28, weight: .black))
-          .foregroundColor(ColorTheme.primary)
+        // AI Processing visualization
+        ZStack {
+          Circle()
+            .stroke(ColorTheme.primary.opacity(0.15), lineWidth: 2)
+            .frame(width: 80, height: 80)
+            .scaleEffect(pulseSize)
 
-        VStack(spacing: 10) {
-          Text("We're generating your recommendations")
-            .font(.system(size: 16, weight: .bold))
+          Circle()
+            .fill(ColorTheme.primary.opacity(0.1))
+            .frame(width: 60, height: 60)
+            .scaleEffect(pulseSize)
+
+          Image(systemName: "sparkles")
+            .font(.system(size: 30))
+            .foregroundColor(ColorTheme.primary)
+        }
+
+        VStack(spacing: 16) {
+          Text("Building Your Training Plan")
+            .font(.system(size: 24, weight: .bold))
+            .foregroundColor(ColorTheme.white)
+
+          Text(thinkingPhrases[currentThinkingPhase])
+            .font(.system(size: 16))
             .foregroundColor(ColorTheme.lightGrey)
             .multilineTextAlignment(.center)
-
-          Text(
-            "This typically takes 20-30 seconds but can take as long as one minute. Thank you for your patience!"
-          )
-          .font(.system(size: 14, weight: .light))
-          .foregroundColor(ColorTheme.lightGrey)
-          .multilineTextAlignment(.center)
+            .opacity(opacity)
+            .animation(.easeInOut, value: currentThinkingPhase)
         }
 
-        VStack(spacing: 8) {
-          HStack(spacing: 12) {
-            ForEach(0..<3) { index in
-              Circle()
-                .fill(ColorTheme.primary)
-                .frame(width: 12, height: 12)
-                .scaleEffect(animationPhase == index ? 1.5 : 1.0)
-                .opacity(animationPhase == index ? 1 : 0.5)
-                .animation(.easeInOut(duration: 0.5), value: animationPhase)
-            }
-          }
-        }
-        .padding(.top, 20)
-
         Spacer()
-      }
-      .padding(.horizontal, 40)
 
-      VStack {
-        Spacer()
+        // About button
         Button(action: { showOnboarding = true }) {
-          Text("About ")
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(ColorTheme.midLightGrey2)
-            + Text("Crush Your Race")
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(ColorTheme.midLightGrey)
+          HStack(spacing: 8) {
+            Image(systemName: "info.circle")
+            Text("About")
+          }
+          .font(.system(size: 16))
+          .foregroundColor(ColorTheme.lightGrey)
+          .padding(.vertical, 12)
+          .padding(.horizontal, 24)
+          .background(ColorTheme.darkDarkGrey)
+          .cornerRadius(8)
         }
-        .padding(.vertical, 16)
-        .frame(maxWidth: .infinity)
-        .overlay(
-          Rectangle()
-            .frame(height: 1)
-            .foregroundColor(ColorTheme.darkGrey),
-          alignment: .top
-        )
-        .background(ColorTheme.black)
-        .padding(.bottom, 16)
       }
-      .edgesIgnoringSafeArea(.bottom)
+      .padding(.horizontal, 32)
+      .padding(.bottom, 32)
     }
     .fullScreenCover(isPresented: $showOnboarding) {
       OnboardingCarousel(showCloseButton: true)
     }
     .onAppear {
-      withAnimation {
-        startAnimation()
-      }
+      startThinkingAnimation()
+      startPulseAnimation()
+      handleInitialAuth()
+    }
+  }
 
-      if isAppleAuth {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-          completeGeneration()
-        }
-      } else {
-        triggerRefreshUser()
+  private func startThinkingAnimation() {
+    Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+      withAnimation {
+        currentThinkingPhase = (currentThinkingPhase + 1) % thinkingPhrases.count
       }
     }
   }
 
-  private func startAnimation() {
-    Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { timer in
-      withAnimation {
-        animationPhase = (animationPhase + 1) % 3
+  private func startPulseAnimation() {
+    withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+      pulseSize = 1.2
+    }
+  }
+
+  private func handleInitialAuth() {
+    if isAppleAuth {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        completeGeneration()
       }
+    } else {
+      triggerRefreshUser()
     }
   }
 
   private func triggerRefreshUser() {
     guard let token = appState.jwtToken else {
-      print("No token found")
       completeGeneration()
       return
     }
 
     APIManager.shared.refreshUser(token: token) { result in
       DispatchQueue.main.async {
-        switch result {
-        case .success:
-          completeGeneration()
-        case .failure(let error):
-          print("Failed to generate plan: \(error.localizedDescription)")
-          completeGeneration()
-        }
+        completeGeneration()
       }
     }
   }
