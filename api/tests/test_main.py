@@ -59,7 +59,7 @@ def test_get_profile():
     """Test successful retrieval of profile"""
     user_auth = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
     response = client.get(
-        "/profile/", headers={"Authorization": f"Bearer {user_auth.jwt_token}"}
+        "/v2/profile/", headers={"Authorization": f"Bearer {user_auth.jwt_token}"}
     )
     assert response.status_code == 200
 

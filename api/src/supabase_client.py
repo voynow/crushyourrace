@@ -142,9 +142,9 @@ def update_user_device_token(athlete_id: str, device_token: str) -> None:
     :param athlete_id: The athlete's ID
     :param device_token: The device token for push notifications
     """
-    client.table("user_auth").update({"device_token": device_token}).eq(
-        "athlete_id", athlete_id
-    ).execute()
+    client.table(supabase_helpers.get_user_table_name()).update(
+        {"device_token": device_token}
+    ).eq("athlete_id", athlete_id).execute()
 
 
 def update_preferences(athlete_id: int, preferences: dict):
