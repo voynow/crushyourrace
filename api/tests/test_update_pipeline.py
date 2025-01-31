@@ -18,21 +18,25 @@ def setup_test_environment():
     auth_manager.authenticate_athlete(os.environ["JAMIES_ATHLETE_ID"])
 
 
-def test_update_training_week_gen_training_plan():
+@pytest.mark.asyncio
+async def test_update_training_week_gen_training_plan():
     """
     gen_training_plan_pipeline is called when the race date & distance are set
     """
     user = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
-    response = _update_training_week(user, ExeType.NEW_WEEK, dt=get_last_sunday())
+    response = await _update_training_week(user, ExeType.NEW_WEEK, dt=get_last_sunday())
     assert isinstance(response, FullTrainingWeek)
 
 
-def test_update_training_week_mid_week():
+@pytest.mark.asyncio
+async def test_update_training_week_mid_week():
     """
     Test successful update of mid week
 
     This is the only mid week update path
     """
     user = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
-    response = _update_training_week(user, ExeType.MID_WEEK, dt=datetime_now_est())
+    response = await _update_training_week(
+        user, ExeType.MID_WEEK, dt=datetime_now_est()
+    )
     assert isinstance(response, FullTrainingWeek)

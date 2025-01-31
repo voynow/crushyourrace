@@ -41,3 +41,5 @@ pytest-cov = "^6.0.0"
 log_cli = true
 log_cli_level = "INFO"
 addopts = "--cov=src"
+asyncio_mode = "auto"
+markers = ["asyncio: mark test as async"]
