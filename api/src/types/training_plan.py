@@ -15,6 +15,23 @@ class WeekRange(BaseModel):
         return f"WeekRange(week_number={self.week_number}, n_weeks_until_race={self.n_weeks_until_race}, start_date={self.start_date}, end_date={self.end_date})"
 
 
+class TrainingPlanWeekLight(BaseModel):
+    week_num: int
+    week_type: str = Field(
+        description="The type of week this is, one of: build, peak, taper, race, maintenance"
+    )
+    volume: float = Field(
+        description="How many miles the athlete should aim to run in this week"
+    )
+    long_run: float = Field(
+        description="How many miles the athlete should aim to run in their long run this week"
+    )
+
+
+class TrainingPlanSkeleton(BaseModel):
+    weeks: List[TrainingPlanWeekLight] = []
+
+
 class WeekType(StrEnum):
     BUILD = "build"
     PEAK = "peak"
@@ -23,20 +40,21 @@ class WeekType(StrEnum):
     MAINTENANCE = "maintenance"
 
 
+class TrainingPlanWeekGeneration(BaseModel):
+    week_type: WeekType
+    notes: str = Field(
+        description="2-3 Sentences. How will this week contribute to the athlete's goal of running race_distance miles by the race_date?"
+    )
+
+
 class TrainingPlanWeek(BaseModel):
     week_start_date: datetime.date
     week_number: int
     n_weeks_until_race: int
     week_type: WeekType
-    notes: str = Field(
-        description="2-3 Sentences. How will this week contribute to the athlete's goal of running race_distance miles by the race_date?"
-    )
-    total_distance: float = Field(
-        description="How many miles the athlete should aim to run in this week"
-    )
-    long_run_distance: float = Field(
-        description="How many miles the athlete should aim to run in their long run this week"
-    )
+    total_distance: float
+    long_run_distance: float
+    notes: str
 
     def dict(self, *args, **kwargs):
         data = super().dict(*args, **kwargs)

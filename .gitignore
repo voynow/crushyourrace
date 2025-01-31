@@ -188,3 +188,5 @@ tests/artifacts
 .terraform.lock.hcl
 *.tfvars
 *.tfvars.json
+
+observe.jsonl

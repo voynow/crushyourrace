@@ -14,6 +14,7 @@ from src import (
     utils,
 )
 from src.constants import DEFAULT_ATHLETE_ID
+from src.types.mileage_recommendation import MileageRecommendation
 from src.types.training_week import FullTrainingWeek
 from src.types.update_pipeline import ExeType
 from src.types.user import User
@@ -22,7 +23,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def _update_training_week(
+async def _update_training_week(
     user: User, exe_type: ExeType, dt: datetime.datetime
 ) -> FullTrainingWeek:
     """
@@ -36,11 +37,11 @@ def _update_training_week(
     strava_client = auth_manager.get_strava_client(user.athlete_id)
     daily_activity = activities.get_daily_activity(strava_client, dt=dt, num_weeks=52)
 
-    mileage_rec = mileage_recommendation.get_or_gen_mileage_recommendation(
+    mileage_rec = await mileage_recommendation.get_or_gen_mileage_recommendation(
         user=user, daily_activity=daily_activity, exe_type=exe_type, dt=dt
     )
 
-    return training_week.gen_full_training_week(
+    return await training_week.gen_full_training_week(
         user=user,
         daily_activity=daily_activity,
         mileage_rec=mileage_rec,
@@ -49,16 +50,18 @@ def _update_training_week(
     )
 
 
-def update_training_week(user: User, exe_type: ExeType, dt: datetime.datetime) -> dict:
+async def update_training_week(
+    user: User, exe_type: ExeType, dt: datetime.datetime
+) -> dict:
     """
-    Full pipeline with update training week & push notification side effects
+    Full pipeline with update training week
 
     :param user: User object
     :param exe_type: ExeType object
     :param dt: datetime injection, helpful for testing
     :return: dict
     """
-    training_week = _update_training_week(user=user, exe_type=exe_type, dt=dt)
+    training_week = await _update_training_week(user=user, exe_type=exe_type, dt=dt)
     supabase_client.upsert_training_week(
         athlete_id=user.athlete_id,
         future_training_week=training_week.future_training_week,
@@ -67,7 +70,7 @@ def update_training_week(user: User, exe_type: ExeType, dt: datetime.datetime) -
     return {"success": True}
 
 
-def update_training_week_wrapper(
+async def update_training_week_wrapper(
     user: User, exe_type: ExeType, dt: datetime.datetime
 ) -> dict:
     """
@@ -79,7 +82,7 @@ def update_training_week_wrapper(
     :return: dict
     """
     try:
-        response = update_training_week(user, exe_type, dt)
+        response = await update_training_week(user, exe_type, dt)
         apn.send_push_notif_wrapper(user)
         return response
     except Exception as e:
@@ -92,7 +95,7 @@ def update_training_week_wrapper(
         return {"success": False, "error": error_message}
 
 
-def update_all_users(dt: Optional[datetime.datetime] = None) -> dict:
+async def update_all_users(dt: Optional[datetime.datetime] = None) -> dict:
     """
     Evenings excluding Sunday: Send update to users who have not yet triggered an update today
     Sunday evening: Send new training week to all active users
@@ -109,13 +112,58 @@ def update_all_users(dt: Optional[datetime.datetime] = None) -> dict:
                 continue
             if supabase_client.has_user_updated_today(user.athlete_id):
                 continue
-            update_training_week_wrapper(user, ExeType.MID_WEEK, dt=dt)
+            await update_training_week_wrapper(user, ExeType.MID_WEEK, dt=dt)
     else:
         # all users get a new training week on Sunday night
         for user in supabase_client.list_users():
             if user.athlete_id == DEFAULT_ATHLETE_ID:
                 continue
-            update_training_week_wrapper(
+            await update_training_week_wrapper(
                 user, ExeType.NEW_WEEK, dt=utils.get_last_sunday()
             )
+    return {"success": True}
+
+
+async def refresh_user_data(user: User) -> dict:
+    """
+    Refresh user data
+
+    :param user: User object
+    :return: dict
+    """
+    strava_client = auth_manager.get_strava_client(user.athlete_id)
+    daily_activity = activities.get_daily_activity(
+        strava_client, dt=utils.get_last_sunday(), num_weeks=52
+    )
+
+    await mileage_recommendation.create_new_mileage_recommendation(
+        user=user, daily_activity=daily_activity, dt=utils.get_last_sunday()
+    )
+
+    mileage_recommendation_row = supabase_client.get_mileage_recommendation(
+        athlete_id=user.athlete_id, dt=utils.datetime_now_est()
+    )
+    mileage_rec = MileageRecommendation(
+        thoughts=mileage_recommendation_row.thoughts,
+        total_volume=mileage_recommendation_row.total_volume,
+        long_run=mileage_recommendation_row.long_run,
+    )
+
+    daily_activity = activities.get_daily_activity(
+        strava_client, dt=utils.datetime_now_est(), num_weeks=3
+    )
+
+    training_week_obj = await training_week.gen_full_training_week(
+        user=user,
+        daily_activity=daily_activity,
+        mileage_rec=mileage_rec,
+        exe_type=ExeType.MID_WEEK,
+        dt=utils.datetime_now_est(),
+    )
+
+    supabase_client.upsert_training_week(
+        athlete_id=user.athlete_id,
+        future_training_week=training_week_obj.future_training_week,
+        past_training_week=training_week_obj.past_training_week,
+    )
     return {"success": True}

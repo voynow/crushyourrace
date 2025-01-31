@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 from typing import List
 
@@ -48,7 +49,7 @@ def get_remaining_days_of_week(dt: datetime.datetime, exe_type: ExeType) -> List
     return days_of_week[day_index + 1 :]
 
 
-def gen_pseudo_training_week(
+async def gen_pseudo_training_week(
     last_n_days_of_activity: List[DailyActivity],
     mileage_recommendation: MileageRecommendation,
     miles_completed_this_week: float,
@@ -69,13 +70,14 @@ def gen_pseudo_training_week(
     )
     if len(rest_of_week) == 0:
         return PseudoTrainingWeek(days=[])
-    return get_completion_json(
+    return await get_completion_json(
         message=message,
         response_model=PseudoTrainingWeek,
+        generation_name="gen_pseudo_training_week",
     )
 
 
-def gen_training_week(
+async def gen_training_week(
     user: User,
     pseudo_training_week: PseudoTrainingWeek,
     mileage_recommendation: MileageRecommendation,
@@ -89,9 +91,10 @@ def gen_training_week(
     )
     if len(pseudo_training_week.days) == 0:
         return TrainingWeek(sessions=[])
-    return get_completion_json(
+    return await get_completion_json(
         message=message,
         response_model=TrainingWeek,
+        generation_name="gen_training_week",
     )
 
 
@@ -117,7 +120,7 @@ def get_detailed_activities_from_today(
     return activities_from_today
 
 
-def gen_coaches_notes(
+async def gen_coaches_notes(
     user: User,
     activity_of_interest: DailyActivity,
     past_7_days: List[DailyActivity],
@@ -139,7 +142,7 @@ def gen_coaches_notes(
         ),
         day_of_week=activity_of_interest.day_of_week,
     )
-    return get_completion(message=message)
+    return await get_completion(message=message, generation_name="gen_coaches_notes")
 
 
 def get_past_week_activities(
@@ -162,12 +165,12 @@ def get_past_week_activities(
     return filtered_activities
 
 
-def slice_and_gen_weekly_activity(
+async def slice_and_gen_weekly_activity(
     user: User, daily_activity: List[DailyActivity], rest_of_week: List[str]
 ) -> List[EnrichedActivity]:
     """
     Slices the weekly activity based on the remaining days of the week and
-    generates coach notes for each activity
+    generates coach notes for each activity concurrently
 
     :param user: user entity
     :param daily_activity: List of DailyActivity objects
@@ -180,23 +183,24 @@ def slice_and_gen_weekly_activity(
     days_so_far = 7 - len(rest_of_week)
     this_weeks_activity = daily_activity[-days_so_far:]
 
-    return [
-        EnrichedActivity(
-            activity=activity_of_interest,
-            coaches_notes=gen_coaches_notes(
-                user=user,
-                activity_of_interest=activity_of_interest,
-                past_7_days=get_past_week_activities(
-                    daily_activity=daily_activity,
-                    activity_of_interest=activity_of_interest,
-                ),
+    async def create_enriched_activity(activity: DailyActivity) -> EnrichedActivity:
+        coaches_notes = await gen_coaches_notes(
+            user=user,
+            activity_of_interest=activity,
+            past_7_days=get_past_week_activities(
+                daily_activity=daily_activity,
+                activity_of_interest=activity,
             ),
         )
-        for activity_of_interest in this_weeks_activity
-    ]
+        return EnrichedActivity(activity=activity, coaches_notes=coaches_notes)
+
+    enriched_activities = await asyncio.gather(
+        *(create_enriched_activity(activity) for activity in this_weeks_activity)
+    )
+    return list(enriched_activities)
 
 
-def gen_full_training_week(
+async def gen_full_training_week(
     user: User,
     daily_activity: List[DailyActivity],
     mileage_rec: MileageRecommendation,
@@ -207,29 +211,29 @@ def gen_full_training_week(
     Generates full training week given mileage recommendation
 
     :param user: user entity
-    :param daily_activity: list of daily activity data past n weeks
+    :param daily_activity: list of daily activity data
     :param mileage_rec: recommendation for this weeks training
     :param exe_type: new week or mid week
     :param dt: datetime injection, helpful for testing
     :return: full training week
     """
     rest_of_week = get_remaining_days_of_week(dt, exe_type)
-    this_weeks_activity = slice_and_gen_weekly_activity(
+    this_weeks_activity = await slice_and_gen_weekly_activity(
         user=user, daily_activity=daily_activity, rest_of_week=rest_of_week
     )
     miles_completed_this_week = sum(
         [obj.activity.distance_in_miles for obj in this_weeks_activity]
     )
     miles_remaining_this_week = mileage_rec.total_volume - miles_completed_this_week
-    pseudo_training_week = gen_pseudo_training_week(
-        last_n_days_of_activity=daily_activity[-14:],
+    pseudo_training_week = await gen_pseudo_training_week(
+        last_n_days_of_activity=daily_activity,
         mileage_recommendation=mileage_rec,
         miles_completed_this_week=miles_completed_this_week,
         miles_remaining_this_week=miles_remaining_this_week,
         rest_of_week=rest_of_week,
         user_preferences=user.preferences,
     )
-    training_week = gen_training_week(
+    training_week = await gen_training_week(
         user=user,
         pseudo_training_week=pseudo_training_week,
         mileage_recommendation=mileage_rec,

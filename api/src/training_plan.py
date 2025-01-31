@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 from typing import List, Optional
 
@@ -5,8 +6,16 @@ import numpy as np
 from src import supabase_client
 from src.constants import COACH_ROLE
 from src.llm import get_completion_json
+from src.prompts import TRAINING_PLAN_PROMPT, TRAINING_PLAN_SKELETON_PROMPT
 from src.types.activity import WeekSummary
-from src.types.training_plan import TrainingPlan, WeekRange
+from src.types.training_plan import (
+    TrainingPlan,
+    TrainingPlanSkeleton,
+    TrainingPlanWeek,
+    TrainingPlanWeekGeneration,
+    TrainingPlanWeekLight,
+    WeekRange,
+)
 from src.types.user import User
 
 
@@ -78,113 +87,143 @@ def get_week_ranges_to_race(
     return week_ranges
 
 
-def gen_training_plan(
-    user: User, weekly_summaries: List[WeekSummary], dt: datetime.datetime
-) -> TrainingPlan:
-    """
-    Generate a training plan for the user given training history
+async def gen_training_plan_skeleton(
+    user: User,
+    dt: datetime.datetime,
+    week_ranges: List[WeekRange],
+    last_52_weeks_mileage_stats: str,
+    last_16_weeks_mileage_stats: str,
+) -> TrainingPlanSkeleton:
 
-    :param user: User object
-    :param weekly_summaries: List of WeekSummary objects
-    :param dt: datetime injection, helpful for testing
-    :return: TrainingPlan object
-    """
+    week_ranges_str = "\n".join(str(week_range) for week_range in week_ranges)
 
-    sorted_weekly_summaries = sorted(weekly_summaries, key=lambda x: x.week_start_date)
-    weekly_mileages = [summary.total_distance for summary in sorted_weekly_summaries]
-    last_52_weeks_mileage_stats = get_mileage_stats(weekly_mileages)
-    last_16_weeks_mileage_stats = get_mileage_stats(weekly_mileages[-16:])
-
-    # create week_ranges string for prompt
-    week_ranges = "\n".join(
-        str(week_range)
-        for week_range in get_week_ranges_to_race(
-            dt=dt, race_date=user.preferences.race_date
-        )
+    message = TRAINING_PLAN_SKELETON_PROMPT.substitute(
+        COACH_ROLE=COACH_ROLE,
+        race_distance=user.preferences.race_distance,
+        race_date=user.preferences.race_date,
+        today=dt.date(),
+        last_52_weeks_mileage_stats=last_52_weeks_mileage_stats,
+        last_16_weeks_mileage_stats=last_16_weeks_mileage_stats,
+        week_ranges=week_ranges_str,
     )
 
-    message = f"""# Best practices for distance running training plans
-1. Simple is better than complex - No need to get cute with cutbacks weeks unless the training block is very long
-2. Its best to be peaking at n_weeks_until_race=6,5,4 and begin tapering at n_weeks_until_race=3. Peaking too early is bad because the athlete won't be maximally fit for the race.
-3. If the athlete is behind schedule (e.g. doesn't have many weeks left) then delay the peak as needed
-4. Athletes expect to be challenged - if last training block they peaked at 55 miles per week then maybe push them to peak at 60 miles per week this block
+    max_attempts = 3
+    for _ in range(max_attempts):
+        training_plan_skeleton = await get_completion_json(
+            message=message,
+            response_model=TrainingPlanSkeleton,
+            generation_name="gen_training_plan",
+        )
+        if len(training_plan_skeleton.weeks) == len(week_ranges):
+            return training_plan_skeleton
 
----
-
-# Example Training Plans
-
-## Beginner Marathon (Little to no running experience)
-### Build: Weeks 1-12
-- Total Volume: 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 (increase by 1 mile per week)
-- Long Run: 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13 (increase by 1 mile per week)
-### Peak: Weeks 13-16
-- Total Volume: 26, 27, 28, 29 (hold volume at 29 miles per week)
-- Long Run: 14, 15, 16, 17 (get comfortable with bigger long runs)
-### Tapering: Weeks 17-18
-- Total Volume: 24, 22 (decrease by 2 miles per week)
-- Long Run: 12, 10 (decrease by 2 miles per week)
-### Race Week: Week 19
-- Total Volume: 32 (two-ish shakeout runs plus the marathon race)
-- Long Run: 26 (marathon distance)
-
-## Intermediate Marathon (If they are already putting in solid mileage)
-### Build: Weeks 1-8
-- Total Volume: 20, 22, 24, 26, 28, 30, 32, 34 (increase by 2 miles per week)
-- Long Run: 10, 11, 12, 13, 14, 15, 16, 17 (increase by 1 mile per week)
-### Peak: Weeks 9-13
-- Total Volume: 40, 40, 40, 40 (hold volume at 40 miles per week)
-- Long Run: 18, 19, 18, 20 (get comfortable with bigger long runs)
-### Tapering: Weeks 14-15
-- Total Volume: 36, 32 (decrease by 2 miles per week)
-- Long Run: 16, 14 (decrease by 2 miles per week)
-### Race Week: Week 16
-- Total Volume: 32 (two-ish shakeout runs plus the marathon race)
-- Long Run: 26 (marathon distance)
-
-## Experienced Marathon (If they are already putting in solid mileage)
-### Build: Weeks 1-6
-- Total Volume: 30, 40, 45, 50, 55, 55 (push toward 55 miles per week)
-- Long Run: 14, 16, 16, 18, 18, 18 (get comfortable with 18 mile long runs)
-### Peak: Weeks 7-10
-- Total Volume: 60, 62, 64, 60 (experiment with 60-64 miles per week)
-- Long Run: 20, 20, 18, 20 (get a few 20 milers in, adding some marathon pace work interspersed with the long runs)
-### Tapering: Weeks 11-12
-- Total Volume: 50, 45 (decrease to more manageable volume)
-- Long Run: 18, 16 (keep it chill)
-### Race Week: Week 13
-- Total Volume: 32 (two-ish shakeout runs plus the marathon race)
-- Long Run: 26 (marathon distance)
-
-## No Race Date Provided: Simply get them into shape or keep them in shape; No need to peak
-### Build: Weeks 1-4
-- Total Volume: 14, 16, 18, 20 (increase by 2 miles per week)
-- Long Run: 7, 8, 8, 9 (increase by 1 mile per week)
-### Maintenance: Weeks 5-12
-- Total Volume: 20, 22, 20, 24, 20, 22, 20, 26 (trying out different volume around 20-26 miles per week)
-- Long Run: 10, 12, 10, 12, 10, 12, 10, 12 (trying out different long run distances around 10-12 miles)
-Note: Maintainance volume and long run distances are heavily dependent on the athlete's current fitness level.
-
----
-
-{COACH_ROLE}
-
-Your client is participating in race_distance={user.preferences.race_distance} on race_date={user.preferences.race_date} (today is {dt.date()})
-
-Now lets take a look at how your client has been training over the past 52 weeks:
-
-Your client's mileage stats over the past 52 weeks...
-{last_52_weeks_mileage_stats}
-
-Your client's mileage stats over the past 16 weeks...
-{last_16_weeks_mileage_stats}
-
-Given this information, now you must generate a training plan for your client over the following weeks:
-{week_ranges}"""
-
-    return get_completion_json(message=message, response_model=TrainingPlan)
+    raise ValueError(
+        f"Failed to generate a valid training plan skeleton after {max_attempts} attempts. "
+        f"Expected {len(week_ranges)} weeks, but got {len(training_plan_skeleton.weeks)} in the final attempt."
+    )
 
 
-def gen_training_plan_pipeline(
+async def gen_training_plan_week(
+    user: User,
+    dt: datetime.datetime,
+    last_52_weeks_mileage_stats: str,
+    last_16_weeks_mileage_stats: str,
+    training_plan_week_light: TrainingPlanWeekLight,
+    week_range: WeekRange,
+    training_block_length: int,
+) -> TrainingPlanWeek:
+    """
+    Generate a training plan week asynchronously.
+
+    :param user: User object
+    :param dt: Current datetime
+    :param last_52_weeks_mileage_stats: Mileage stats over last 52 weeks
+    :param last_16_weeks_mileage_stats: Mileage stats over last 16 weeks
+    :param training_plan_week_light: Lightweight training plan week info
+    :param week_range: WeekRange object containing week details
+    :param training_block_length: Total number of weeks in training block
+    :return: TrainingPlanWeek object
+    """
+    message = TRAINING_PLAN_PROMPT.substitute(
+        COACH_ROLE=COACH_ROLE,
+        race_distance=user.preferences.race_distance,
+        race_date=user.preferences.race_date,
+        today=dt.date(),
+        last_52_weeks_mileage_stats=last_52_weeks_mileage_stats,
+        last_16_weeks_mileage_stats=last_16_weeks_mileage_stats,
+        training_plan_week_light=training_plan_week_light,
+        training_block_length=training_block_length,
+    )
+    training_plan_week_generation: TrainingPlanWeekGeneration = (
+        await get_completion_json(
+            message=message,
+            response_model=TrainingPlanWeekGeneration,
+            generation_name="gen_training_plan_week",
+        )
+    )
+    return TrainingPlanWeek(
+        week_start_date=week_range.start_date,
+        week_number=week_range.week_number,
+        n_weeks_until_race=week_range.n_weeks_until_race,
+        week_type=training_plan_week_generation.week_type,
+        total_distance=training_plan_week_light.volume,
+        long_run_distance=training_plan_week_light.long_run,
+        notes=training_plan_week_generation.notes,
+    )
+
+
+async def gen_training_plan(
+    user: User, weekly_summaries: List[WeekSummary], dt: datetime.datetime
+) -> TrainingPlan:
+    """
+    Generate a training plan for the user given training history.
+
+    :param user: User object
+    :param weekly_summaries: List of WeekSummary objects
+    :param dt: Current datetime, useful for testing
+    :return: TrainingPlan object
+    """
+    sorted_weekly_summaries: List[WeekSummary] = sorted(
+        weekly_summaries, key=lambda x: x.week_start_date
+    )
+    weekly_mileages: List[float] = [
+        summary.total_distance for summary in sorted_weekly_summaries
+    ]
+    last_52_weeks_mileage_stats: str = get_mileage_stats(weekly_mileages)
+    last_16_weeks_mileage_stats: str = get_mileage_stats(weekly_mileages[-16:])
+
+    week_ranges: List[WeekRange] = get_week_ranges_to_race(
+        dt=dt, race_date=user.preferences.race_date
+    )
+
+    training_plan_skeleton: TrainingPlanSkeleton = await gen_training_plan_skeleton(
+        user=user,
+        dt=dt,
+        week_ranges=week_ranges,
+        last_52_weeks_mileage_stats=last_52_weeks_mileage_stats,
+        last_16_weeks_mileage_stats=last_16_weeks_mileage_stats,
+    )
+
+    tasks = [
+        gen_training_plan_week(
+            user=user,
+            dt=dt,
+            last_52_weeks_mileage_stats=last_52_weeks_mileage_stats,
+            last_16_weeks_mileage_stats=last_16_weeks_mileage_stats,
+            training_plan_week_light=training_plan_week_light,
+            week_range=week_range,
+            training_block_length=len(week_ranges),
+        )
+        for week_range, training_plan_week_light in zip(
+            week_ranges, training_plan_skeleton.weeks
+        )
+    ]
+    training_plan_weeks: List[TrainingPlanWeek] = await asyncio.gather(*tasks)
+
+    return TrainingPlan(training_plan_weeks=training_plan_weeks)
+
+
+async def gen_training_plan_pipeline(
     user: User, weekly_summaries: List[WeekSummary], dt: datetime.datetime
 ) -> TrainingPlan:
     """
@@ -195,7 +234,7 @@ def gen_training_plan_pipeline(
     :param dt: datetime injection, helpful for testing
     :return: TrainingPlan object
     """
-    training_plan = gen_training_plan(
+    training_plan = await gen_training_plan(
         user=user, weekly_summaries=weekly_summaries, dt=dt
     )
     supabase_client.insert_training_plan(

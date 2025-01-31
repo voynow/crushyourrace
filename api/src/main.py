@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from typing import Callable, Optional
 
 from fastapi import (
@@ -18,10 +17,9 @@ from src.middleware import log_and_handle_errors
 from src.types.feedback import FeedbackRow
 from src.types.training_plan import TrainingPlan
 from src.types.training_week import FullTrainingWeek
-from src.types.update_pipeline import ExeType
 from src.types.user import User
 from src.types.webhook import StravaEvent
-from src.update_pipeline import update_all_users, update_training_week
+from src.update_pipeline import refresh_user_data, update_all_users
 
 app = FastAPI()
 
@@ -89,25 +87,25 @@ async def update_preferences(
     return {"success": True}
 
 
-@app.get("/profile/")
-async def get_profile(user: User = Depends(auth_manager.validate_user)) -> dict:
-    """
-    Retrieve user profile information including Strava details
+# @app.get("/profile/")
+# async def get_profile(user: User = Depends(auth_manager.validate_user)) -> dict:
+#     """
+#     Retrieve user profile information including Strava details
 
-    :param user: The authenticated user
-    :return: Dictionary containing profile information
-    """
-    athlete = auth_manager.get_strava_client(user.athlete_id).get_athlete()
-    return {
-        "success": True,
-        "profile": {
-            "firstname": athlete.firstname,
-            "lastname": athlete.lastname,
-            "profile": athlete.profile,
-            "email": user.email,
-            "preferences": user.preferences.json(),
-        },
-    }
+#     :param user: The authenticated user
+#     :return: Dictionary containing profile information
+#     """
+#     athlete = auth_manager.get_strava_client(user.athlete_id).get_athlete()
+#     return {
+#         "success": True,
+#         "profile": {
+#             "firstname": athlete.firstname,
+#             "lastname": athlete.lastname,
+#             "profile": athlete.profile,
+#             "email": user.email,
+#             "preferences": user.preferences.json(),
+#         },
+#     }
 
 
 @app.get("/v2/profile/")
@@ -194,7 +192,7 @@ async def strava_webhook(request: Request, background_tasks: BackgroundTasks) ->
 
 
 @app.post("/refresh/")
-async def refresh_user_data(
+async def refresh(
     user: User = Depends(auth_manager.validate_user),
 ) -> dict:
     """
@@ -203,14 +201,7 @@ async def refresh_user_data(
     :param user: The authenticated user
     :return: Success status
     """
-    start_time = time.time()
-    update_training_week(user, ExeType.NEW_WEEK, dt=utils.get_last_sunday())
-    print(f"New week update time: {time.time() - start_time:.2f} seconds")
-
-    start_time = time.time()
-    update_training_week(user, ExeType.MID_WEEK, dt=utils.datetime_now_est())
-    print(f"Mid-week update time: {time.time() - start_time:.2f} seconds")
-
+    await refresh_user_data(user)
     return {"success": True}
 
 
@@ -224,7 +215,7 @@ async def update_all_users_trigger(request: Request) -> dict:
     if api_key != os.environ["API_KEY"]:
         raise HTTPException(status_code=403, detail="Invalid API key")
 
-    update_all_users()
+    await update_all_users()
     return {"success": True}
 
 
