@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from typing import Callable, Optional
 
 from fastapi import (
@@ -18,10 +17,9 @@ from src.middleware import log_and_handle_errors
 from src.types.feedback import FeedbackRow
 from src.types.training_plan import TrainingPlan
 from src.types.training_week import FullTrainingWeek
-from src.types.update_pipeline import ExeType
 from src.types.user import User
 from src.types.webhook import StravaEvent
-from src.update_pipeline import update_all_users, refresh_user_data
+from src.update_pipeline import refresh_user_data, update_all_users
 
 app = FastAPI()
 
@@ -203,7 +201,7 @@ async def refresh(
     :param user: The authenticated user
     :return: Success status
     """
-    refresh_user_data(user)
+    await refresh_user_data(user)
     return {"success": True}
 
 
@@ -217,7 +215,7 @@ async def update_all_users_trigger(request: Request) -> dict:
     if api_key != os.environ["API_KEY"]:
         raise HTTPException(status_code=403, detail="Invalid API key")
 
-    update_all_users()
+    await update_all_users()
     return {"success": True}
 
 

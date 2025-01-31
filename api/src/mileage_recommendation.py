@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List, Tuple
+from typing import List
 
 from src import activities, supabase_client
 from src.training_plan import gen_training_plan_pipeline
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def gen_mileage_rec_wrapper(
+async def gen_mileage_rec_wrapper(
     user: User, daily_activity: List[DailyActivity], dt: datetime.datetime
 ) -> MileageRecommendation:
     """
@@ -34,7 +34,7 @@ def gen_mileage_rec_wrapper(
         )
 
     weekly_summaries = activities.get_weekly_summaries(daily_activity=daily_activity)
-    training_plan = gen_training_plan_pipeline(
+    training_plan = await gen_training_plan_pipeline(
         user=user, weekly_summaries=weekly_summaries, dt=dt
     )
     next_week_plan = training_plan.training_plan_weeks[0]
@@ -45,7 +45,7 @@ def gen_mileage_rec_wrapper(
     )
 
 
-def create_new_mileage_recommendation(
+async def create_new_mileage_recommendation(
     user: User,
     daily_activity: List[DailyActivity],
     dt: datetime.datetime,
@@ -58,7 +58,7 @@ def create_new_mileage_recommendation(
     :param dt: datetime injection, helpful for testing
     :return: mileage recommendation entity
     """
-    mileage_recommendation = gen_mileage_rec_wrapper(
+    mileage_recommendation = await gen_mileage_rec_wrapper(
         user=user, daily_activity=daily_activity, dt=dt
     )
     tomorrow = dt + datetime.timedelta(days=1)
@@ -77,25 +77,7 @@ def create_new_mileage_recommendation(
     return mileage_recommendation
 
 
-def get_week_of_year_and_year(
-    exe_type: ExeType, dt: datetime.datetime
-) -> Tuple[int, int]:
-    """
-    Get the week of year and year for the given datetime. We run NEW_WEEK on
-    Sunday night, so in order to upsert
-
-    :param exe_type: ExeType object
-    :param dt: datetime object
-    :return: Tuple[int, int]
-    """
-    if exe_type == ExeType.NEW_WEEK:
-        tomorrow = dt + datetime.timedelta(days=1)
-        return tomorrow.isocalendar().week, tomorrow.isocalendar().year
-    else:
-        return
-
-
-def get_or_gen_mileage_recommendation(
+async def get_or_gen_mileage_recommendation(
     user: User,
     daily_activity: List[DailyActivity],
     exe_type: ExeType,
@@ -111,7 +93,7 @@ def get_or_gen_mileage_recommendation(
     :return: mileage recommendation entity
     """
     if exe_type == ExeType.NEW_WEEK:
-        return create_new_mileage_recommendation(
+        return await create_new_mileage_recommendation(
             user=user, daily_activity=daily_activity, dt=dt
         )
     else:

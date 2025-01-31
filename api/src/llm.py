@@ -3,14 +3,14 @@ import time
 from typing import Dict, List, Optional, Type
 
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import AsyncOpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from pydantic import BaseModel, ValidationError
 from src.constants import OBSERVE_FILE
 
 load_dotenv()
-client = OpenAI()
+client = AsyncOpenAI()
 
 
 def observe(
@@ -38,14 +38,14 @@ def observe(
         )
 
 
-def _get_completion(
+async def _get_completion(
     messages: List[ChatCompletionMessage],
     model: str = "gpt-4o",
     response_format: Optional[Dict] = None,
     generation_name: Optional[str] = None,
 ):
     start_time = time.time()
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=model, messages=messages, response_format=response_format
     )
     duration = time.time() - start_time
@@ -59,7 +59,7 @@ def _get_completion(
     return response.choices[0].message.content
 
 
-def get_completion(
+async def get_completion(
     message: str,
     model: Optional[str] = "gpt-4o",
     generation_name: Optional[str] = None,
@@ -72,12 +72,12 @@ def get_completion(
     :return: The raw string response from the LLM.
     """
     messages = [{"role": "user", "content": message}]
-    return _get_completion(
+    return await _get_completion(
         messages=messages, model=model, generation_name=generation_name
     )
 
 
-def get_completion_json(
+async def get_completion_json(
     message: str,
     response_model: Type[BaseModel],
     model: str = "gpt-4o",
@@ -102,7 +102,7 @@ def get_completion_json(
     messages = [
         {
             "role": "system",
-            "content": f"You are a helpful assistant designed to output JSON. {response_model_content}",
+            "content": f"You are a helpful assistant designed to output JSON. Do not use newline characters or spaces for json formatting. {response_model_content}",
         },
         {"role": "user", "content": message},
     ]
@@ -110,7 +110,7 @@ def get_completion_json(
     response_str = "Completion failed."
     for attempt in range(max_retries):
         try:
-            response_str = _get_completion(
+            response_str = await _get_completion(
                 model=model,
                 messages=messages,
                 response_format={"type": "json_object"},
