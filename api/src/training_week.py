@@ -224,7 +224,7 @@ def gen_full_training_week(
     )
     miles_remaining_this_week = mileage_rec.total_volume - miles_completed_this_week
     pseudo_training_week = gen_pseudo_training_week(
-        last_n_days_of_activity=daily_activity[-14:],
+        last_n_days_of_activity=daily_activity,
         mileage_recommendation=mileage_rec,
         miles_completed_this_week=miles_completed_this_week,
         miles_remaining_this_week=miles_remaining_this_week,
