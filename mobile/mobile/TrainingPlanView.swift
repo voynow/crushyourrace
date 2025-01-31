@@ -10,7 +10,6 @@ struct TrainingPlanView: View {
   @State private var errorMessage: String?
   let historicalWeeks: [WeekSummary]
   let preloadedPlan: TrainingPlan?
-  @State private var showRaceSetupSheet = false
   @State private var preferences = Preferences()
 
   var body: some View {
@@ -41,32 +40,7 @@ struct TrainingPlanView: View {
             }
           } else if let plan = trainingPlan {
             if plan.isEmpty {
-              VStack(spacing: 16) {
-                Text("Lets get you a training plan!")
-                  .font(.title3)
-                  .foregroundColor(ColorTheme.lightGrey)
-                Text("Set up your race details to get started.")
-                  .font(.subheadline)
-                  .foregroundColor(ColorTheme.midLightGrey)
-                  .multilineTextAlignment(.center)
-                  .padding(.horizontal)
-                Button(action: {
-                  showRaceSetupSheet = true
-                }) {
-                  Text("Set Up Race Details")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(ColorTheme.black)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(ColorTheme.primary)
-                    .cornerRadius(8)
-                }
-              }
-              .padding()
-              .background(ColorTheme.darkDarkGrey)
-              .cornerRadius(12)
-              .frame(maxHeight: .infinity, alignment: .center)
-              .padding()
+              ErrorView()
             } else {
               VStack(spacing: 0) {
                 RaceDetailsWidget(
@@ -87,16 +61,6 @@ struct TrainingPlanView: View {
           }
         }
       }
-    }
-    .sheet(isPresented: $showRaceSetupSheet) {
-      RaceSetupSheet(
-        preferences: $preferences,
-        isPresented: $showRaceSetupSheet,
-        onSave: {
-          fetchTrainingPlanData()
-          appState.setGeneratingPlanState()
-        }
-      )
     }
     .background(ColorTheme.black.edgesIgnoringSafeArea(.all))
     .onAppear {
@@ -458,7 +422,7 @@ struct RaceDetailsWidget: View {
         Text("\(weeksCount)")
           .font(.system(size: 48, weight: .bold))
           .foregroundColor(ColorTheme.lightGrey)
-        Text("Weeks Out From Race Day")
+        Text("Weeks Left of Training")
           .font(.system(size: 24, weight: .bold))
           .foregroundColor(ColorTheme.white)
       }
@@ -469,7 +433,7 @@ struct RaceDetailsWidget: View {
           Text("Distance")
             .font(.subheadline)
             .foregroundColor(ColorTheme.midLightGrey)
-          Text(preferences.raceDistance ?? "")
+          Text(preferences.raceDistance ?? "N/A")
             .font(.title3)
             .foregroundColor(ColorTheme.primaryLight)
         }
@@ -478,7 +442,7 @@ struct RaceDetailsWidget: View {
           Text("Date")
             .font(.subheadline)
             .foregroundColor(ColorTheme.midLightGrey)
-          Text(preferences.raceDate?.formatted(date: .long, time: .omitted) ?? "")
+          Text(preferences.raceDate?.formatted(date: .long, time: .omitted) ?? "N/A")
             .font(.title3)
             .foregroundColor(ColorTheme.primaryLight)
         }
