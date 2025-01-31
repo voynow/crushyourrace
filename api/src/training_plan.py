@@ -181,7 +181,11 @@ Your client's mileage stats over the past 16 weeks...
 Given this information, now you must generate a training plan for your client over the following weeks:
 {week_ranges}"""
 
-    return get_completion_json(message=message, response_model=TrainingPlan)
+    return get_completion_json(
+        message=message,
+        response_model=TrainingPlan,
+        generation_name="gen_training_plan",
+    )
 
 
 def gen_training_plan_pipeline(

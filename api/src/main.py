@@ -89,25 +89,25 @@ async def update_preferences(
     return {"success": True}
 
 
-@app.get("/profile/")
-async def get_profile(user: User = Depends(auth_manager.validate_user)) -> dict:
-    """
-    Retrieve user profile information including Strava details
+# @app.get("/profile/")
+# async def get_profile(user: User = Depends(auth_manager.validate_user)) -> dict:
+#     """
+#     Retrieve user profile information including Strava details
 
-    :param user: The authenticated user
-    :return: Dictionary containing profile information
-    """
-    athlete = auth_manager.get_strava_client(user.athlete_id).get_athlete()
-    return {
-        "success": True,
-        "profile": {
-            "firstname": athlete.firstname,
-            "lastname": athlete.lastname,
-            "profile": athlete.profile,
-            "email": user.email,
-            "preferences": user.preferences.json(),
-        },
-    }
+#     :param user: The authenticated user
+#     :return: Dictionary containing profile information
+#     """
+#     athlete = auth_manager.get_strava_client(user.athlete_id).get_athlete()
+#     return {
+#         "success": True,
+#         "profile": {
+#             "firstname": athlete.firstname,
+#             "lastname": athlete.lastname,
+#             "profile": athlete.profile,
+#             "email": user.email,
+#             "preferences": user.preferences.json(),
+#         },
+#     }
 
 
 @app.get("/v2/profile/")

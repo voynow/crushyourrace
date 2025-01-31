@@ -72,6 +72,7 @@ def gen_pseudo_training_week(
     return get_completion_json(
         message=message,
         response_model=PseudoTrainingWeek,
+        generation_name="gen_pseudo_training_week",
     )
 
 
@@ -92,6 +93,7 @@ def gen_training_week(
     return get_completion_json(
         message=message,
         response_model=TrainingWeek,
+        generation_name="gen_training_week",
     )
 
 
@@ -139,7 +141,7 @@ def gen_coaches_notes(
         ),
         day_of_week=activity_of_interest.day_of_week,
     )
-    return get_completion(message=message)
+    return get_completion(message=message, generation_name="gen_coaches_notes")
 
 
 def get_past_week_activities(

@@ -8,3 +8,5 @@ FREE_TRIAL_DAYS = 14
 DEFAULT_ATHLETE_ID = -1
 DEFAULT_USER_ID = "default"
 DEFAULT_JWT_TOKEN = "default"
+
+OBSERVE_FILE = "observe.jsonl"

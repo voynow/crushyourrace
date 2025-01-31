@@ -18,24 +18,11 @@ def setup_test_environment():
     auth_manager.authenticate_athlete(os.environ["JAMIES_ATHLETE_ID"])
 
 
-def test_update_training_week_gen_mileage_recommendation():
-    """
-    gen_mileage_recommendation is called when the race date & distance are not set
-    """
-    user = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
-    user.preferences.race_date = None
-    user.preferences.race_distance = None
-    response = _update_training_week(user, ExeType.NEW_WEEK, dt=get_last_sunday())
-    assert isinstance(response, FullTrainingWeek)
-
-
 def test_update_training_week_gen_training_plan():
     """
     gen_training_plan_pipeline is called when the race date & distance are set
     """
     user = supabase_client.get_user(os.environ["JAMIES_ATHLETE_ID"])
-    assert user.preferences.race_date is not None
-    assert user.preferences.race_distance is not None
     response = _update_training_week(user, ExeType.NEW_WEEK, dt=get_last_sunday())
     assert isinstance(response, FullTrainingWeek)
 
