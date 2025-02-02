@@ -157,6 +157,7 @@ async def gen_training_plan_week(
     training_plan_week_generation: TrainingPlanWeekGeneration = (
         await get_completion_json(
             message=message,
+            model="gpt-4o-mini",
             response_model=TrainingPlanWeekGeneration,
             generation_name="gen_training_plan_week",
         )

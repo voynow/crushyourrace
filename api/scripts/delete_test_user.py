@@ -32,5 +32,21 @@ def delete_test_user() -> None:
         ).execute()
 
 
+def delete_test_user_training_plans() -> None:
+    """
+    Delete test user data (excluding user table)
+    """
+    clear_tables = [
+        "training_week",
+        "training_plan",
+        "mileage_recommendation",
+    ]
+
+    for table in clear_tables:
+        client.table(table).delete().eq(
+            column="athlete_id", value=os.environ["TEST_USER_ATHLETE_ID"]
+        ).execute()
+
+
 if __name__ == "__main__":
     delete_test_user()

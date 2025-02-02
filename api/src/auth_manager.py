@@ -57,7 +57,6 @@ def refresh_and_update_user_token(athlete_id: int, refresh_token: str) -> User:
     :param refresh_token: refresh token for Strava API
     :return: User
     """
-    logger.info(f"Refreshing and updating token for athlete {athlete_id}")
     access_info = strava_client.refresh_access_token(
         client_id=os.environ["STRAVA_CLIENT_ID"],
         client_secret=os.environ["STRAVA_CLIENT_SECRET"],
