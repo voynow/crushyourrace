@@ -1,6 +1,5 @@
 import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 const montserrat = Montserrat({ subsets: ['latin'] });
 
