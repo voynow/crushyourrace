@@ -110,7 +110,7 @@ export default function Home(): React.ReactElement {
                   <h3 className="text-3xl font-bold text-blue-300">Vertical AI Expertise</h3>
                   <div className="h-1 w-20 bg-blue-500"></div>
                   <p className="text-xl leading-relaxed text-gray-300">
-                    While others build generic AI, we're laser-focused on running. Our specialized intelligence evolves with every stride you take, delivering coaching that's light years ahead.
+                    While others build generic AI, we&apos;re laser-focused on running. Our specialized intelligence evolves with every stride you take, delivering coaching that&apos;s light years ahead.
                   </p>
                 </div>
               </motion.div>
@@ -127,7 +127,7 @@ export default function Home(): React.ReactElement {
                   <h3 className="text-3xl font-bold text-blue-300">Beyond Human Limits</h3>
                   <div className="h-1 w-20 bg-blue-500"></div>
                   <p className="text-xl leading-relaxed text-gray-300">
-                    AI will surpass human coaching capabilities in the next 5 years. We're already providing truly personalized training at a scale no human coach can match.
+                    AI will surpass human coaching capabilities in the next 5 years. We&apos;re already providing truly personalized training at a scale no human coach can match.
                   </p>
                 </div>
               </motion.div>
@@ -144,7 +144,7 @@ export default function Home(): React.ReactElement {
                   <h3 className="text-3xl font-bold text-blue-300">Democratizing Elite Training</h3>
                   <div className="h-1 w-20 bg-blue-500"></div>
                   <p className="text-xl leading-relaxed text-gray-300">
-                    Elite-level guidance shouldn't be exclusive. As AI costs plummet, we're making world-class training accessible to every runner on the planet.
+                    Elite-level guidance shouldn&apos;t be exclusive. As AI costs plummet, we&apos;re making world-class training accessible to every runner on the planet.
                   </p>
                 </div>
               </motion.div>
