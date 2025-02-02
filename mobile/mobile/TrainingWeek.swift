@@ -87,6 +87,11 @@ struct WeeklyProgressContent: View {
   let completedMileage: Double
   let totalMileage: Double
 
+  private var progressPercentage: Int {
+    guard totalMileage > 0 else { return 0 }
+    return Int((completedMileage / totalMileage) * 100)
+  }
+
   private var weekRange: String {
     var calendar = Calendar.current
     calendar.firstWeekday = 2  // 2 represents Monday
@@ -118,8 +123,7 @@ struct WeeklyProgressContent: View {
       }
 
       HStack {
-        let progress = completedMileage / totalMileage
-        Text("\(Int(progress * 100))%")
+        Text("\(progressPercentage)%")
           .font(.system(size: 40, weight: .bold))
           .foregroundColor(ColorTheme.white)
 
@@ -136,7 +140,7 @@ struct WeeklyProgressContent: View {
         }
       }
 
-      ProgressBar(progress: completedMileage / totalMileage)
+      ProgressBar(progress: totalMileage > 0 ? completedMileage / totalMileage : 0)
         .frame(height: 8)
         .animation(.easeOut(duration: 0.8), value: completedMileage)
     }
