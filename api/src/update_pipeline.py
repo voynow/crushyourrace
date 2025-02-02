@@ -134,6 +134,9 @@ async def refresh_user_data(
     :param dt: datetime injection, helpful for testing
     :return: dict
     """
+    # when refresh triggered on sundays, we need to step into next week
+    dt_tomorrow = dt + datetime.timedelta(days=1)
+
     strava_client = auth_manager.get_strava_client(user.athlete_id)
     daily_activity = activities.get_daily_activity(
         strava_client, dt=utils.get_last_sunday(dt), num_weeks=52
@@ -145,9 +148,8 @@ async def refresh_user_data(
         dt=utils.get_last_sunday(dt),
     )
 
-    # refresh user on sundays -> new week
     mileage_recommendation_row = supabase_client.get_mileage_recommendation(
-        athlete_id=user.athlete_id, dt=dt + datetime.timedelta(days=1)
+        athlete_id=user.athlete_id, dt=dt_tomorrow
     )
     mileage_rec = MileageRecommendation(
         thoughts=mileage_recommendation_row.thoughts,
@@ -162,7 +164,7 @@ async def refresh_user_data(
         daily_activity=daily_activity,
         mileage_rec=mileage_rec,
         exe_type=ExeType.MID_WEEK,
-        dt=dt,
+        dt=dt_tomorrow,
     )
 
     supabase_client.upsert_training_week(
