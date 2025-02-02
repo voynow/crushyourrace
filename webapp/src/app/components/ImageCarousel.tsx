@@ -23,7 +23,7 @@ const pages: CarouselPage[] = [
     {
         image: "/Profile.png",
         title: "Tailored For You",
-        subtitle: "Update your preferences to get the most out of your training"
+        subtitle: "Customize your preferences to get the most out of your training"
     }
 ];
 
@@ -86,7 +86,7 @@ export default function ImageCarousel(): React.ReactElement {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                             </div>
-                            <div className="absolute bottom-6 left-6 right-6">
+                            <div className="absolute bottom-6 left-6 right-6 text-center">
                                 <h3 className="text-2xl font-semibold text-white mb-2">
                                     {pages[currentPage].title}
                                 </h3>

@@ -2,6 +2,8 @@
 
 Crush Your Race is the next generation of running coach apps, powered by an advanced AI agent that delivers hyper-personalized training plans and dynamic feedback in real time. Built with runners in mind, it integrates seamlessly with Strava, transforming performance data into actionable insights to help you reach your goals faster.
 
+![Crush Your Race Banner](webapp/public/banner.png)
+
 ## Principles
 
 ### Vertical AI Agents
@@ -24,4 +26,4 @@ Automatic syncing with Strava ensures your plan stays current, constantly refini
 ### Dynamic Real-Time Adjustments
 Because performance can vary day to day, Crush Your Race updates your regimen on the fly, keeping you on track toward your goals no matter what life throws at you.
 
-Join us in reshaping how runners train—let’s run smarter, together.
+Join us in reshaping how runners train—let's run smarter, together.

@@ -19,3 +19,49 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.glass-section {
+  background: rgba(17, 25, 40, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+.glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.glow-blue {
+  background: #60A5FA;
+}
+
+.glow-purple {
+  background: #818CF8;
+}
+
+.gradient-dark {
+  background: linear-gradient(to bottom right, rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 0.4));
+}
+
+.gradient-blue {
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.05), rgba(37, 99, 235, 0.1));
+}
+
+.gradient-purple {
+  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(124, 58, 237, 0.1));
+}
+
+.section-divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(to right, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent
+  );
+}
