@@ -1,41 +1,27 @@
 # Crush Your Race: Building the Future of Running
 
-**Crush Your Race** is the next generation of running coach apps, powered by AI to deliver hyper-personalized training plans and dynamic feedback based on real-time performance data. Designed with runners in mind, Crush Your Race integrates seamlessly with **Strava**, offering a streamlined experience for athletes aiming to optimize their training through data-driven insights.
+Crush Your Race is the next generation of running coach apps, powered by an advanced AI agent that delivers hyper-personalized training plans and dynamic feedback in real time. Built with runners in mind, it integrates seamlessly with Strava, transforming performance data into actionable insights to help you reach your goals faster.
 
 ## Principles
 
-1. **AI Will Outperform Human Coaches**  
-   We are placing a bet on AI surpassing the capabilities of human coaching within the next 5–10 years. This eliminates the need for cookie-cutter training plans or reliance on human input, enabling truly personalized coaching at scale.
+### Vertical AI Agents
+In a market where generic AI models are increasingly commoditized, niche-focused AI solutions are best positioned to thrive. Crush Your Race leverages domain expertise in running to deliver next-level coaching — no generic quick fixes, just smart, specialized training that evolves with you.
 
-2. **The Cost of Intelligence Will Plummet**  
-   We are confident that the cost of intelligence will continue to fall dramatically. By leveraging this trend, Crush Your Race is poised to deliver elite-level coaching to every runner, at a fraction of the cost of our competitors.
+### AI Will Outperform Human Coaches
+We believe that in the next 5–10 years, AI will surpass the capabilities of human coaching. By eliminating static, cookie-cutter plans and traditional coach constraints, Crush Your Race provides truly personalized training at scale.
 
-3. **Volume Over Pace**  
-   Our philosophy prioritizes training volume, not pace. Pace determination is a somewhat solved problem through heart rate training analytics. While advanced pace prediction is possible, it is not our focus. Our mission is clear: empower runners with smarter volume-driven training plans, where AI can dynamically allocate volume appropriately.
+### The Cost of Intelligence Will Plummet
+As AI continues to become more efficient and affordable, Crush Your Race stands ready to offer elite-level guidance at a fraction of traditional coaching costs. Our vision is to democratize top-tier training for every runner.
 
 ## Key Features
 
-- **AI-Powered Training Plans**  
-   Forget one-size-fits-all plans. Crush Your Race creates personalized training programs tailored to each runner's fitness level, goals, and weekly performance data.
+### AI-Powered Training Plans
+Forget one-size-fits-all. Crush Your Race dynamically adjusts each plan to your unique fitness level, objectives, and weekly performance data. Our AI-native approach allows us to give hyper personalization while being malleable to any use case.
 
-- **Strava Integration**  
-   Effortlessly sync your runs, track progress, and adapt your training. Crush Your Race ensures your plans stay up-to-date with the latest data from Strava.
+### Strava Integration
+Automatic syncing with Strava ensures your plan stays current, constantly refining workouts based on your most recent runs. Go for a run, publish it to strava, and your training plan is immediately updated on Crush Your Race.
 
-- **Dynamic Real-Time Adjustments**  
-   Performance fluctuates, and so does your training plan. Crush Your Race makes live adjustments to ensure you stay on track with your weekly goals.
+### Dynamic Real-Time Adjustments
+Because performance can vary day to day, Crush Your Race updates your regimen on the fly, keeping you on track toward your goals no matter what life throws at you.
 
-
-## Roadmap
-
-- **Immediate Priorities (01/01/2025 - 01/15/2025)**
-  - Get MVP shipped (waiting on Apple App Store approval)
-  - Rebrand to {redacted} and secure the {redacted}.ai domain
-  - Onboard beta users
-
-- **Next Steps (01/15/2025 - 01/30/2025)**
-  - Set up payments: with a two-week free trial and $5/month subscription.
-  - Hard launch on Twitter, Reddit, and other social media platforms.
-  - Launch blog with product and development updates
-
-
-Join us in shaping the future of training. Let's run smarter, together.
+Join us in reshaping how runners train—let’s run smarter, together.

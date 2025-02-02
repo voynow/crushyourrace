@@ -180,6 +180,7 @@ Packages/
 
 tests/artifacts
 .vercel
+pnpm-lock.yaml
 
 # Terraform
 *.tfstate
