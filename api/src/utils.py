@@ -33,7 +33,7 @@ def round_all_floats(model: BaseModel, precision: int = 2) -> BaseModel:
     return model
 
 
-def get_last_sunday() -> datetime.datetime:
-    today = datetime_now_est().today()
+def get_last_sunday(dt: datetime.datetime = datetime_now_est()) -> datetime.datetime:
+    today = dt.today()
     days_since_sunday = (today.weekday() + 1) % 7
     return today - datetime.timedelta(days=days_since_sunday)

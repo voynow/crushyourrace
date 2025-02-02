@@ -1,15 +1,19 @@
 import logging
 import os
+from datetime import timedelta
 
 import pytest
+from scripts.delete_test_user import delete_test_user_training_plans
 from src import auth_manager, supabase_client
 from src.types.training_week import FullTrainingWeek
 from src.types.update_pipeline import ExeType
-from src.update_pipeline import _update_training_week
+from src.update_pipeline import _update_training_week, refresh_user_data
 from src.utils import datetime_now_est, get_last_sunday
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("stravalib").setLevel(logging.WARNING)
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -40,3 +44,25 @@ async def test_update_training_week_mid_week():
         user, ExeType.MID_WEEK, dt=datetime_now_est()
     )
     assert isinstance(response, FullTrainingWeek)
+
+
+@pytest.mark.asyncio
+async def test_refresh_user_data_on_sunday():
+    """
+    Test successful refresh of user data
+    """
+    delete_test_user_training_plans()
+    user = supabase_client.get_user(os.environ["TEST_USER_ATHLETE_ID"])
+    response = await refresh_user_data(user, dt=get_last_sunday())
+    assert isinstance(response, dict)
+
+
+@pytest.mark.asyncio
+async def test_refresh_user_data_on_monday():
+    """
+    Test successful refresh of user data
+    """
+    delete_test_user_training_plans()
+    user = supabase_client.get_user(os.environ["TEST_USER_ATHLETE_ID"])
+    response = await refresh_user_data(user, dt=get_last_sunday() + timedelta(days=1))
+    assert isinstance(response, dict)

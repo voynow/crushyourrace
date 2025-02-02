@@ -142,7 +142,11 @@ async def gen_coaches_notes(
         ),
         day_of_week=activity_of_interest.day_of_week,
     )
-    return await get_completion(message=message, generation_name="gen_coaches_notes")
+    return await get_completion(
+        message=message,
+        model="gpt-4o-mini",
+        generation_name="gen_coaches_notes",
+    )
 
 
 def get_past_week_activities(

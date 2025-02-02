@@ -124,24 +124,30 @@ async def update_all_users(dt: Optional[datetime.datetime] = None) -> dict:
     return {"success": True}
 
 
-async def refresh_user_data(user: User) -> dict:
+async def refresh_user_data(
+    user: User, dt: datetime.datetime = utils.datetime_now_est()
+) -> dict:
     """
     Refresh user data
 
     :param user: User object
+    :param dt: datetime injection, helpful for testing
     :return: dict
     """
     strava_client = auth_manager.get_strava_client(user.athlete_id)
     daily_activity = activities.get_daily_activity(
-        strava_client, dt=utils.get_last_sunday(), num_weeks=52
+        strava_client, dt=utils.get_last_sunday(dt), num_weeks=52
     )
 
     await mileage_recommendation.create_new_mileage_recommendation(
-        user=user, daily_activity=daily_activity, dt=utils.get_last_sunday()
+        user=user,
+        daily_activity=daily_activity,
+        dt=utils.get_last_sunday(dt),
+        override_timedelta=True,
     )
 
     mileage_recommendation_row = supabase_client.get_mileage_recommendation(
-        athlete_id=user.athlete_id, dt=utils.datetime_now_est()
+        athlete_id=user.athlete_id, dt=dt
     )
     mileage_rec = MileageRecommendation(
         thoughts=mileage_recommendation_row.thoughts,
@@ -149,16 +155,14 @@ async def refresh_user_data(user: User) -> dict:
         long_run=mileage_recommendation_row.long_run,
     )
 
-    daily_activity = activities.get_daily_activity(
-        strava_client, dt=utils.datetime_now_est(), num_weeks=3
-    )
+    daily_activity = activities.get_daily_activity(strava_client, dt=dt, num_weeks=3)
 
     training_week_obj = await training_week.gen_full_training_week(
         user=user,
         daily_activity=daily_activity,
         mileage_rec=mileage_rec,
         exe_type=ExeType.MID_WEEK,
-        dt=utils.datetime_now_est(),
+        dt=dt,
     )
 
     supabase_client.upsert_training_week(
