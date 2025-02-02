@@ -5,7 +5,6 @@ import React from 'react';
 const montserrat = Montserrat({ subsets: ['latin'] });
 
 export default function Navbar(): React.ReactElement {
-    const router = useRouter();
 
     return (
         <nav className="fixed top-0 w-full text-gray-100 z-10 bg-gray-900/80 backdrop-blur-sm">
