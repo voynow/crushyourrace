@@ -23,6 +23,17 @@ def setup_test_environment():
 
 
 @pytest.mark.asyncio
+async def test_refresh_user_data_on_sunday():
+    """
+    Test successful refresh of user data
+    """
+    delete_test_user_training_plans()
+    user = supabase_client.get_user(os.environ["TEST_USER_ATHLETE_ID"])
+    response = await refresh_user_data(user, dt=get_last_sunday())
+    assert isinstance(response, dict)
+
+
+@pytest.mark.asyncio
 async def test_update_training_week_gen_training_plan():
     """
     gen_training_plan_pipeline is called when the race date & distance are set
@@ -44,17 +55,6 @@ async def test_update_training_week_mid_week():
         user, ExeType.MID_WEEK, dt=datetime_now_est()
     )
     assert isinstance(response, FullTrainingWeek)
-
-
-@pytest.mark.asyncio
-async def test_refresh_user_data_on_sunday():
-    """
-    Test successful refresh of user data
-    """
-    delete_test_user_training_plans()
-    user = supabase_client.get_user(os.environ["TEST_USER_ATHLETE_ID"])
-    response = await refresh_user_data(user, dt=get_last_sunday())
-    assert isinstance(response, dict)
 
 
 @pytest.mark.asyncio

@@ -163,8 +163,10 @@ async def refresh_user_data(
         user=user,
         daily_activity=daily_activity,
         mileage_rec=mileage_rec,
-        exe_type=ExeType.MID_WEEK,
-        dt=dt_tomorrow,
+        exe_type=(
+            ExeType.NEW_WEEK if dt.weekday() == 6 else ExeType.MID_WEEK
+        ),  # step into next week on sundays
+        dt=dt,
     )
 
     supabase_client.upsert_training_week(
