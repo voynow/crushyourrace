@@ -18,7 +18,7 @@ export default function Home(): React.ReactElement {
   const testimonials: Array<{ name: string; quote: string; image: string }> = [
     {
       name: "Danny Lio",
-      quote: "The training plan adapts to my performance in real-time. It's like having an elite coach watching every run.",
+      quote: "The training plan adapts to my performance in real-time. It&apos;s like having an elite coach watching every run.",
       image: "/danny-lio.png"
     },
     {
@@ -28,7 +28,7 @@ export default function Home(): React.ReactElement {
     },
     {
       name: "Rachel Decker",
-      quote: "The Strava integration is seamless - my plan updates automatically after every run. It's truly intelligent coaching.",
+      quote: "The Strava integration is seamless - my plan updates automatically after every run. It&apos;s truly intelligent coaching.",
       image: "/rachel-decker.png"
     },
   ];
