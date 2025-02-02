@@ -49,7 +49,6 @@ async def create_new_mileage_recommendation(
     user: User,
     daily_activity: List[DailyActivity],
     dt: datetime.datetime,
-    override_timedelta: bool = False,
 ) -> MileageRecommendation:
     """
     Creates a new mileage recommendation for the next week
@@ -63,11 +62,7 @@ async def create_new_mileage_recommendation(
         user=user, daily_activity=daily_activity, dt=dt
     )
 
-    # hack for refresh user data route
-    if override_timedelta:
-        week_of_date = dt
-    else:
-        week_of_date = dt + datetime.timedelta(days=1)
+    week_of_date = dt + datetime.timedelta(days=1)
 
     week_of_year = week_of_date.isocalendar().week
     year = week_of_date.isocalendar().year

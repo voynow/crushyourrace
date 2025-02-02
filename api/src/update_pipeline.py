@@ -143,11 +143,11 @@ async def refresh_user_data(
         user=user,
         daily_activity=daily_activity,
         dt=utils.get_last_sunday(dt),
-        override_timedelta=True,
     )
 
+    # refresh user on sundays -> new week
     mileage_recommendation_row = supabase_client.get_mileage_recommendation(
-        athlete_id=user.athlete_id, dt=dt
+        athlete_id=user.athlete_id, dt=dt + datetime.timedelta(days=1)
     )
     mileage_rec = MileageRecommendation(
         thoughts=mileage_recommendation_row.thoughts,
